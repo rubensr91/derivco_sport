@@ -47,13 +47,14 @@ defmodule Phoenix.CodeReloader.Server do
 
   def handle_call({:reload!, endpoint}, from, state) do
     compilers = endpoint.config(:reloadable_compilers)
+    reloadable_apps = endpoint.config(:reloadable_apps) || default_reloadable_apps()
     backup = load_backup(endpoint)
     froms  = all_waiting([from], endpoint)
 
     {res, out} =
       proxy_io(fn ->
         try do
-          mix_compile(Code.ensure_loaded(Mix.Task), compilers)
+          mix_compile(Code.ensure_loaded(Mix.Task), compilers, reloadable_apps)
         catch
           :exit, {:shutdown, 1} ->
             :error
@@ -74,6 +75,14 @@ defmodule Phoenix.CodeReloader.Server do
 
     Enum.each(froms, &GenServer.reply(&1, reply))
     {:noreply, state}
+  end
+
+  defp default_reloadable_apps() do
+    if Mix.Project.umbrella? do
+      Enum.map(Mix.Dep.Umbrella.cached, &(&1.app))
+    else
+      [Mix.Project.config()[:app]]
+    end
   end
 
   def handle_info(_, state) do
@@ -129,32 +138,34 @@ defmodule Phoenix.CodeReloader.Server do
     end
   end
 
-  # TODO: Remove the function_exported call after 1.3 support is removed
-  # and just use loaded. apply/3 is used to prevent a compilation
-  # warning.
-  defp mix_compile({:module, Mix.Task}, compilers) do
-    if Mix.Project.umbrella? do
-      deps =
-        if function_exported?(Mix.Dep.Umbrella, :cached, 0) do
-          apply(Mix.Dep.Umbrella, :cached, [])
-        else
-          Mix.Dep.Umbrella.loaded
-        end
-      Enum.each deps, fn dep ->
-        Mix.Dep.in_dependency(dep, fn _ ->
-          mix_compile_unless_stale_config(compilers)
-        end)
-      end
-    else
-      mix_compile_unless_stale_config(compilers)
-      :ok
-    end
+  defp mix_compile({:module, Mix.Task}, compilers, apps_to_reload) do
+    mix_compile_deps(Mix.Dep.cached, apps_to_reload, compilers)
+    mix_compile_project(Mix.Project.config()[:app], apps_to_reload, compilers)
   end
-  defp mix_compile({:error, _reason}, _) do
+  defp mix_compile({:error, _reason}, _, _) do
     raise "the Code Reloader is enabled but Mix is not available. If you want to " <>
           "use the Code Reloader in production or inside an escript, you must add " <>
           ":mix to your applications list. Otherwise, you must disable code reloading " <>
           "in such environments"
+  end
+
+  defp mix_compile_deps(deps, apps_to_reload, compilers) do
+    for dep <- deps, dep.app in apps_to_reload do
+      Mix.Dep.in_dependency dep, fn _ ->
+        mix_compile_unless_stale_config(compilers)
+      end
+    end
+
+    :ok
+  end
+
+  defp mix_compile_project(nil, _, _), do: :ok
+  defp mix_compile_project(app, apps_to_reload, compilers) do
+    if app in apps_to_reload do
+      mix_compile_unless_stale_config(compilers)
+    end
+
+    :ok
   end
 
   defp mix_compile_unless_stale_config(compilers) do
@@ -172,6 +183,7 @@ defmodule Phoenix.CodeReloader.Server do
         You must restart your server after changing the following config or lib files:
 
           * #{Enum.map_join(files, "\n  * ", &Path.relative_to_cwd/1)}
+
         """
      end
    end

@@ -6,11 +6,11 @@ defmodule Mix.Tasks.Phx.Gen.Embedded do
 
       mix phx.gen.embedded Blog.Post title:string views:integer
 
-  The first argument is the schema module followed by the schema attributes
+  The first argument is the schema module followed by the schema attributes.
 
   The generated schema above will contain:
 
-    * an embedded schema file in lib/my_app/blog/post.ex.
+    * an embedded schema file in `lib/my_app/blog/post.ex`
 
   ## Attributes
 
@@ -101,7 +101,7 @@ defmodule Mix.Tasks.Phx.Gen.Embedded do
   @doc false
   def copy_new_files(%Schema{} = schema, paths, binding) do
     files = files_to_be_generated(schema)
-    Mix.Phoenix.copy_from(paths,"priv/templates/phx.gen.embedded", binding, files)
+    Mix.Phoenix.copy_from(paths, "priv/templates/phx.gen.embedded", binding, files)
 
     schema
   end

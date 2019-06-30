@@ -75,7 +75,10 @@ defmodule Phoenix.Controller.Pipeline do
   defmacro __before_compile__(env) do
     action = {:action, [], true}
     plugs  = [action|Module.get_attribute(env.module, :plugs)]
-    {conn, body} = Plug.Builder.compile(env, plugs, log_on_halt: :debug)
+    {conn, body} = Plug.Builder.compile(env, plugs,
+      log_on_halt: :debug,
+      init_mode: Phoenix.plug_init_mode())
+
     fallback_ast =
       env.module
       |> Module.get_attribute(:phoenix_fallback)
@@ -130,12 +133,12 @@ defmodule Phoenix.Controller.Pipeline do
 
   @doc false
   def __catch__(%Plug.Conn{}, :function_clause, controller, action,
-                [{controller, action, [%Plug.Conn{} = conn | _], _loc} | _] = stack) do
-    args = [controller: controller, action: action, params: conn.params]
+      [{controller, action, [%Plug.Conn{} | _] = action_args, _loc} | _] = stack) do
+    args = [module: controller, function: action, arity: length(action_args), args: action_args]
     reraise Phoenix.ActionClauseError, args, stack
   end
   def __catch__(%Plug.Conn{} = conn, reason, _controller, _action, stack) do
-    Phoenix.PlugError.reraise(conn, :error, reason, stack)
+    Plug.Conn.WrapperError.reraise(conn, :error, reason, stack)
   end
 
   @doc """

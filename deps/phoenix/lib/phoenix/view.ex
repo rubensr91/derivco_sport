@@ -10,35 +10,43 @@ defmodule Phoenix.View do
 
   ## Examples
 
-  Phoenix defines the view template at `lib/web/web.ex`:
+  Phoenix defines the view template at `lib/your_app_web.ex`:
 
       defmodule YourAppWeb do
+        # ...
+
         def view do
           quote do
-            use Phoenix.View, root: "lib/web/templates"
+            use Phoenix.View, root: "lib/your_app_web/templates", namespace: "web"
 
-            # Import common functionality
-            import YourApp.Router.Helpers
+            # Import convenience functions from controllers
+            import Phoenix.Controller, only: [get_flash: 1, get_flash: 2, view_module: 1]
 
-            # Use Phoenix.HTML to import all HTML functions (forms, tags, etc)
+            # Use all HTML functionality (forms, tags, etc)
             use Phoenix.HTML
+
+            import YourAppWeb.ErrorHelpers
+            import YourAppWeb.Gettext
+
+            # Alias the Helpers module as Routes
+            alias  YourAppWeb.Router.Helpers, as: Routes
           end
         end
 
         # ...
       end
 
-  We can use the definition above to define any view in your application:
+  You can use the definition above to define any view in your application:
 
       defmodule YourApp.UserView do
         use YourAppWeb, :view
       end
 
-  Because we have defined the template root to be "lib/web/templates", `Phoenix.View`
-  will automatically load all templates at "web/templates/user" and include them
+  Because we have defined the template root to be "lib/your_app_web/templates", `Phoenix.View`
+  will automatically load all templates at "your_app_web/templates/user" and include them
   in the `YourApp.UserView`. For example, imagine we have the template:
 
-      # web/templates/user/index.html.eex
+      # your_app_web/templates/user/index.html.eex
       Hello <%= @name %>
 
   The `.eex` extension maps to a template engine which tells Phoenix how
@@ -64,8 +72,8 @@ defmodule Phoenix.View do
   template is safe and that we don't need to escape its contents because
   all data has already been encoded. Let's try to inject custom code:
 
-      Phoenix.View.render(YourApp.UserView, "index.html", name: "John<br />Doe")
-      #=> {:safe, "Hello John&lt;br /&gt;Doe"}
+      Phoenix.View.render(YourApp.UserView, "index.html", name: "John<br/>Doe")
+      #=> {:safe, "Hello John&lt;br/&gt;Doe"}
 
   This inner representation allows us to render and compose templates easily.
   For example, if you want to render JSON data, we could do so by adding a
@@ -102,7 +110,7 @@ defmodule Phoenix.View do
     * `:root` - the template root to find templates
     * `:path` - the optional path to search for templates within the `:root`.
       Defaults to the underscored view module name. A blank string may
-      be provided to use the `:root` path directly as the template lookup path.
+      be provided to use the `:root` path directly as the template lookup path
     * `:namespace` - the namespace to consider when calculating view paths
     * `:pattern` - the wildcard pattern to apply to the root
       when finding templates. Default `"*"`
@@ -116,7 +124,7 @@ defmodule Phoenix.View do
   namespace is `MyApp`, templates are expected at `Path.join(root, "user")`.
   On the other hand, if the view is `MyApp.Admin.UserView`,
   the path will be `Path.join(root, "admin/user")` and so on. For
-  explicit root path locations, the `:path` option can instead be provided.
+  explicit root path locations, the `:path` option can be provided instead.
   The `:root` and `:path` are joined to form the final lookup path.
   A blank string may be provided to use the `:root` path directly as the
   template lookup path.
@@ -125,13 +133,63 @@ defmodule Phoenix.View do
   the template to also be looked up at `Path.join(root, "user")`.
   """
   defmacro __using__(opts) do
+    %{module: module} = __CALLER__
+
+    if Module.get_attribute(module, :view_resource) do
+      raise ArgumentError,
+            "use Phoenix.View is being called twice in the module #{module}. " <>
+              "Make sure to call it only once per module"
+    else
+      view_resource = String.to_atom(Phoenix.Naming.resource_name(module, "View"))
+      Module.put_attribute(module, :view_resource, view_resource)
+    end
+
     quote do
       import Phoenix.View
       use Phoenix.Template, Phoenix.View.__template_options__(__MODULE__, unquote(opts))
+
+      @before_compile Phoenix.View
       @view_resource String.to_atom(Phoenix.Naming.resource_name(__MODULE__, "View"))
+
+      @doc """
+      Renders the given template locally.
+      """
+      def render(template, assigns \\ %{})
+
+      def render(module, template) when is_atom(module) do
+        Phoenix.View.render(module, template, %{})
+      end
+
+      def render(template, _assigns) when not is_binary(template) do
+        raise ArgumentError, "render/2 expects template to be a string, got: #{inspect template}"
+      end
+
+      def render(template, assigns) when not is_map(assigns) do
+        render(template, Enum.into(assigns, %{}))
+      end
 
       @doc "The resource name, as an atom, for this view"
       def __resource__, do: @view_resource
+    end
+  end
+
+
+  @anno (if :erlang.system_info(:otp_release) >= '19' do
+    [generated: true]
+  else
+    [line: -1]
+  end)
+
+  @doc false
+  defmacro __before_compile__(_env) do
+    # We are using @anno because we don't want warnings coming from
+    # render/2 to be reported in case the user has defined a catch-all
+    # render/2 clause.
+    quote @anno do
+      # Catch-all clause for rendering.
+      def render(template, assigns) do
+        render_template(template, assigns)
+      end
     end
   end
 
@@ -141,7 +199,7 @@ defmodule Phoenix.View do
   It expects the view module, the template as a string, and a
   set of assigns.
 
-  Notice this function returns the inner representation of a
+  Notice that this function returns the inner representation of a
   template. If you want the encoded template as a result, use
   `render_to_iodata/3` instead.
 
@@ -157,7 +215,7 @@ defmodule Phoenix.View do
   Phoenix, they are:
 
     * `:layout` - tells Phoenix to wrap the rendered result in the
-      given layout. See next section.
+      given layout. See next section
 
   The following assigns are reserved, and cannot be set directly:
 
@@ -171,9 +229,9 @@ defmodule Phoenix.View do
   `{LayoutModule, "template.extension"}`.
 
   To render the template within the layout, simply call `render/3`
-  using the `@view_module` and `@view_template` assign:
+  using the `@view_module` and `@view_template` assigns:
 
-      <%= render @view_module, @view_template, assigns %>
+      <%= render(@view_module, @view_template, assigns) %>
 
   """
   def render(module, template, assigns) do
@@ -183,21 +241,30 @@ defmodule Phoenix.View do
     |> render_within(module, template)
   end
 
-  defp render_within({{layout_mod, layout_tpl}, assigns}, inner_mod, inner_tpl) do
-    assigns = Map.merge(assigns, %{view_module: inner_mod,
-                                   view_template: inner_tpl})
-
-    render_layout(layout_mod, layout_tpl, assigns)
-  end
-
   defp render_within({false, assigns}, module, template) do
     assigns = Map.merge(assigns, %{view_module: module,
                                    view_template: template})
     module.render(template, assigns)
   end
 
-  defp render_layout(layout_mod, layout_tpl, assigns) do
+  defp render_within({layout, assigns}, inner_mod, inner_tpl) do
+    assigns = Map.merge(assigns, %{view_module: inner_mod, view_template: inner_tpl})
+    render_layout(layout, assigns)
+  end
+
+  defp render_layout({layout_mod, layout_tpl}, assigns)
+       when is_atom(layout_mod) and is_binary(layout_tpl) do
     layout_mod.render(layout_tpl, assigns)
+  end
+
+  defp render_layout(layout, _assigns) do
+    raise ArgumentError, """
+    invalid value for reserved key :layout in View.render/3 assigns
+
+    :layout accepts a tuple of the form {LayoutModule, "template.extension"}
+
+    got: #{inspect(layout)}
+    """
   end
 
   @doc """
@@ -226,7 +293,7 @@ defmodule Phoenix.View do
 
   To use a precompiled template, create a `scripts.html.eex` file in the `templates`
   directory for the corresponding view you want it to render for. For example,
-  for the `UserView`, create the `scripts.html.eex` file at `web/templates/user/`.
+  for the `UserView`, create the `scripts.html.eex` file at `your_app_web/templates/user/`.
 
   ## Rendering based on controller template
 
@@ -247,7 +314,7 @@ defmodule Phoenix.View do
 
   """
   def render_existing(module, template, assigns \\ []) do
-    render(module, template, put_in(assigns[:render_existing], {module, template}))
+    render(module, template, put_in(assigns[:__phx_render_existing__], {module, template}))
   end
 
   @doc """
@@ -351,7 +418,7 @@ defmodule Phoenix.View do
   def __template_options__(module, opts) do
     root = opts[:root] || raise(ArgumentError, "expected :root to be given as an option")
     path = opts[:path]
-    pattern = opts[:pattern]
+
     namespace =
       if given = opts[:namespace] do
         given
@@ -363,11 +430,6 @@ defmodule Phoenix.View do
       end
 
     root_path = Path.join(root, path || Template.module_to_template_root(module, namespace, "View"))
-
-    if pattern do
-      [root: root_path, pattern: pattern]
-    else
-      [root: root_path]
-    end
+    [root: root_path] ++ Keyword.take(opts, [:pattern, :template_engines])
   end
 end

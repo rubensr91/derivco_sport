@@ -15,7 +15,7 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
     with {:ok, %<%= inspect schema.alias %>{} = <%= schema.singular %>} <- <%= inspect context.alias %>.create_<%= schema.singular %>(<%= schema.singular %>_params) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", <%= schema.route_helper %>_path(conn, :show, <%= schema.singular %>))
+      |> put_resp_header("location", Routes.<%= schema.route_helper %>_path(conn, :show, <%= schema.singular %>))
       |> render("show.json", <%= schema.singular %>: <%= schema.singular %>)
     end
   end
@@ -35,6 +35,7 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
 
   def delete(conn, %{"id" => id}) do
     <%= schema.singular %> = <%= inspect context.alias %>.get_<%= schema.singular %>!(id)
+
     with {:ok, %<%= inspect schema.alias %>{}} <- <%= inspect context.alias %>.delete_<%= schema.singular %>(<%= schema.singular %>) do
       send_resp(conn, :no_content, "")
     end

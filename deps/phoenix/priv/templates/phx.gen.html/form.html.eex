@@ -5,13 +5,11 @@
     </div>
   <%% end %>
 <%= for {label, input, error} <- inputs, input do %>
-  <div class="form-group">
-    <%= label %>
-    <%= input %>
-    <%= error %>
-  </div>
+  <%= label %>
+  <%= input %>
+  <%= error %>
 <% end %>
-  <div class="form-group">
-    <%%= submit "Submit", class: "btn btn-primary" %>
+  <div>
+    <%%= submit "Save" %>
   </div>
 <%% end %>

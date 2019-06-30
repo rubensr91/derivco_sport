@@ -12,13 +12,13 @@ defmodule Phoenix.Router.Resource do
   @doc """
   The `Phoenix.Router.Resource` struct. It stores:
 
-    * :path - the path as string (not normalized)
-    * :param - the param to be used in routes (not normalized)
-    * :controller - the controller as an atom
-    * :actions - a list of actions as atoms
-    * :route - the context for resource routes
-    * :member - the context for member routes
-    * :collection - the context for collection routes
+    * `:path` - the path as string (not normalized)
+    * `:param` - the param to be used in routes (not normalized)
+    * `:controller` - the controller as an atom
+    * `:actions` - a list of actions as atoms
+    * `:route` - the context for resource routes
+    * `:member` - the context for member routes
+    * `:collection` - the context for collection routes
 
   """
   defstruct [:path, :actions, :param, :route, :controller, :route, :member, :collection, :singleton]
@@ -71,7 +71,7 @@ defmodule Phoenix.Router.Resource do
     unless actions -- supported_actions == [], do: raise ArgumentError, """
     invalid :#{type} action(s) passed to resources.
 
-    supported#{if singleton, do: " singleton", else: ""} actions: #{inspect(default_actions(singleton))}
+    supported#{if singleton, do: " singleton", else: ""} actions: #{inspect(supported_actions)}
 
     got: #{inspect(actions)}
     """

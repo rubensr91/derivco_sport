@@ -25,13 +25,13 @@ defmodule Mix.Phoenix.Context do
     ctx_app   = opts[:context_app] || Mix.Phoenix.context_app()
     base      = Module.concat([Mix.Phoenix.context_base(ctx_app)])
     module    = Module.concat(base, context_name)
-    alias     = module |> Module.split() |> tl() |> Module.concat()
+    alias     = Module.concat([module |> Module.split() |> List.last()])
     basedir   = Phoenix.Naming.underscore(context_name)
     basename  = Path.basename(basedir)
     dir       = Mix.Phoenix.context_lib_path(ctx_app, basedir)
+    file      = dir <> ".ex"
     test_dir  = Mix.Phoenix.context_test_path(ctx_app, basedir)
-    file      = Path.join([dir, basename <> ".ex"])
-    test_file = Path.join([test_dir, basename <> "_test.exs"])
+    test_file = test_dir <> "_test.exs"
     generate? = Keyword.get(opts, :context, true)
 
     %Context{
@@ -53,6 +53,26 @@ defmodule Mix.Phoenix.Context do
   def pre_existing?(%Context{file: file}), do: File.exists?(file)
 
   def pre_existing_tests?(%Context{test_file: file}), do: File.exists?(file)
+
+  def function_count(%Context{file: file}) do
+    {_ast, count} =
+      file
+      |> File.read!()
+      |> Code.string_to_quoted!()
+      |> Macro.postwalk(0, fn
+        {:def, _, _} = node, count -> {node, count + 1}
+        node, count -> {node, count}
+      end)
+
+    count
+  end
+
+  def file_count(%Context{dir: dir}) do
+    dir
+    |> Path.join("**/*.ex")
+    |> Path.wildcard()
+    |> Enum.count()
+  end
 
   defp web_module do
     base = Mix.Phoenix.base()

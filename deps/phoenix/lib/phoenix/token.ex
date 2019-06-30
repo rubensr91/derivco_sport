@@ -34,7 +34,7 @@ defmodule Phoenix.Token do
       the endpoint stored in the socket
     * a string, representing the secret key base itself. A key base
       with at least 20 randomly generated characters should be used
-      to provide adequate entropy.
+      to provide adequate entropy
 
   The second argument is a [cryptographic salt](https://en.wikipedia.org/wiki/Salt_(cryptography))
   which must be the same in both calls to `sign/4` and `verify/4`.
@@ -58,8 +58,8 @@ defmodule Phoenix.Token do
 
       def create(conn, params) do
         user = User.create(params)
-        render conn, "user.json",
-               %{token: Phoenix.Token.sign(conn, "user salt", user.id), user: user}
+        render(conn, "user.json",
+               %{token: Phoenix.Token.sign(conn, "user salt", user.id), user: user})
       end
 
   Once the token is sent, the client may now send it back to the server
@@ -69,7 +69,7 @@ defmodule Phoenix.Token do
       defmodule MyApp.UserSocket do
         use Phoenix.Socket
 
-        def connect(%{"token" => token}, socket) do
+        def connect(%{"token" => token}, socket, _connect_info) do
           case Phoenix.Token.verify(socket, "user salt", token, max_age: 86400) do
             {:ok, user_id} ->
               socket = assign(socket, :user, Repo.get!(User, user_id))
@@ -78,6 +78,8 @@ defmodule Phoenix.Token do
               :error
           end
         end
+
+        def connect(_params, _socket, _connect_info), do: :error
       end
 
   In this example, the phoenix.js client will send the token in the
@@ -103,7 +105,8 @@ defmodule Phoenix.Token do
     * `:key_digest` - option passed to `Plug.Crypto.KeyGenerator`
       when generating the encryption and signing keys. Defaults to `:sha256`
     * `:signed_at` - set the timestamp of the token in seconds.
-      Defaults to `System.system_time(:seconds)`
+      Defaults to `System.system_time(:second)`
+
   """
   def sign(context, salt, data, opts \\ []) when is_binary(salt) do
     {signed_at_seconds, key_opts} = Keyword.pop(opts, :signed_at)
@@ -122,8 +125,8 @@ defmodule Phoenix.Token do
 
   In this scenario we will create a token, sign it, then provide it to a client
   application. The client will then use this token to authenticate requests for
-  resources from the server. (See `Phoenix.Token` summary for more info about
-  creating tokens.)
+  resources from the server. See `Phoenix.Token` summary for more info about
+  creating tokens.
 
       iex> user_id    = 99
       iex> secret     = "kjoy3o1zeidquwy1398juxzldjlksahdk3"
@@ -156,7 +159,7 @@ defmodule Phoenix.Token do
   ## Options
 
     * `:max_age` - verifies the token only if it has been generated
-      "max age" ago in seconds. A reasonable value is 1 day (`86400`
+      "max age" ago in seconds. A reasonable value is 1 day (86400
       seconds)
     * `:key_iterations` - option passed to `Plug.Crypto.KeyGenerator`
       when generating the encryption and signing keys. Defaults to 1000
@@ -205,6 +208,7 @@ defmodule Phoenix.Token do
 
         config :my_app, MyApp.Endpoint,
             secret_key_base: ...
+
     """
   end
 
@@ -223,14 +227,17 @@ defmodule Phoenix.Token do
   defp expired?(_signed, :infinity), do: false
 
   defp expired?(_signed, nil) do
-    # TODO: Default to 86400 on future releases.
+    # TODO v2: Default to 86400 on future releases.
     Logger.warn ":max_age was not set on Phoenix.Token.verify/4. " <>
                 "A max_age is recommended otherwise tokens are forever valid. " <>
-                "Please set it to the amount of seconds the token is valid, such as 86400 (1 day)"
+                "Please set it to the amount of seconds the token is valid, " <>
+                "such as 86400 (1 day), or :infinity if you really want this token to be valid forever"
     false
   end
 
+  defp expired?(_signed, max_age_secs) when max_age_secs <= 0, do: true
+
   defp expired?(signed, max_age_secs), do: (signed + trunc(max_age_secs * 1000)) < now_ms()
 
-  defp now_ms, do: System.system_time(:milliseconds)
+  defp now_ms, do: System.system_time(:millisecond)
 end

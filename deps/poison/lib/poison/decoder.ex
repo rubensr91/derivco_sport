@@ -40,15 +40,11 @@ defmodule Poison.Decode do
   end
 
   defp transform_struct(value, keys, as, options) when keys in [:atoms, :atoms!] do
-    as
-    |> Map.from_struct
-    |> Map.merge(value)
-    |> do_transform_struct(keys, as, options)
+    do_transform_struct(value, keys, as, options)
   end
 
   defp transform_struct(value, keys, as, options) do
-    as
-    |> Map.from_struct
+    Map.from_struct(as)
     |> Enum.reduce(%{}, fn {key, default}, acc ->
       Map.put(acc, key, Map.get(value, Atom.to_string(key), default))
     end)
@@ -56,23 +52,14 @@ defmodule Poison.Decode do
   end
 
   defp do_transform_struct(value, keys, as, options) do
-    default = struct(as.__struct__)
-
-    as
-    |> Map.from_struct
+    Map.from_struct(as)
     |> Enum.reduce(%{}, fn {key, as}, acc ->
-      new_value = case Map.fetch(value, key) do
-        {:ok, ^as} when is_map(as) or is_list(as) ->
-          Map.get(default, key)
-        {:ok, value} when is_map(value) or is_list(value) ->
-          transform(value, keys, as, options)
-        {:ok, value} ->
-          value
-        :error ->
-          Map.get(default, key)
+      case Map.get(value, key) do
+        value when is_map(value) or is_list(value) ->
+          Map.put(acc, key, transform(value, keys, as, options))
+        value ->
+          Map.put(acc, key, value)
       end
-
-      Map.put(acc, key, new_value)
     end)
     |> Map.put(:__struct__, as.__struct__)
     |> Poison.Decoder.decode(options)

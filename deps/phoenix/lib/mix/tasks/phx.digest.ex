@@ -6,7 +6,7 @@ defmodule Mix.Tasks.Phx.Digest do
   @recursive true
 
   @moduledoc """
-  Digests and compress static files.
+  Digests and compresses static files.
 
       mix phx.digest
       mix phx.digest priv/static -o /www/public
@@ -32,6 +32,7 @@ defmodule Mix.Tasks.Phx.Digest do
     * app-eb0a5b9302e8d32828d8a73f137cc8f0.js
     * app-eb0a5b9302e8d32828d8a73f137cc8f0.js.gz
     * cache_manifest.json
+
   """
 
   @doc false

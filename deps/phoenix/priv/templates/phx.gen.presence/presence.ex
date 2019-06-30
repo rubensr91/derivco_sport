@@ -11,17 +11,17 @@ defmodule <%= module %> do
 
       defmodule <%= base %>.MyChannel do
         use <%= base %>Web, :channel
-        alias <%= base %>.Presence
+        alias <%= base %>Web.Presence
 
         def join("some:topic", _params, socket) do
-          send(self, :after_join)
+          send(self(), :after_join)
           {:ok, assign(socket, :user_id, ...)}
         end
 
         def handle_info(:after_join, socket) do
-          push socket, "presence_state", Presence.list(socket)
+          push(socket, "presence_state", Presence.list(socket))
           {:ok, _} = Presence.track(socket, socket.assigns.user_id, %{
-            online_at: inspect(System.system_time(:seconds))
+            online_at: inspect(System.system_time(:second))
           })
           {:noreply, socket}
         end
@@ -34,7 +34,7 @@ defmodule <%= module %> do
 
   Finally, a diff of presence join and leave events will be sent to the
   client as they happen in real-time with the "presence_diff" event.
-  See `Phoenix.Presence.list/2` for details on the presence datastructure.
+  See `Phoenix.Presence.list/2` for details on the presence data structure.
 
   ## Fetching Presence Information
 
@@ -45,7 +45,7 @@ defmodule <%= module %> do
   isolated data fetching to extend presence metadata.
 
   The function receives a topic and map of presences and must return a
-  map of data matching the Presence datastructure:
+  map of data matching the Presence data structure:
 
       %{"123" => %{metas: [%{status: "away", phx_ref: ...}],
         "456" => %{metas: [%{status: "online", phx_ref: ...}]}

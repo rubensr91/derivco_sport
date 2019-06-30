@@ -17,15 +17,15 @@ defmodule Phoenix.ChannelTest do
   `subscribe_and_join/4` topics and channels:
 
       {:ok, _, socket} =
-        socket("user:id", %{some_assigns: 1})
+        socket(UserSocket, "user:id", %{some_assigns: 1})
         |> subscribe_and_join(RoomChannel, "room:lobby", %{"id" => 3})
 
   You usually want to set the same ID and assigns your
-  `UserSocket.connect/2` callback would set. Alternatively,
-  you can use the `connect/2` helper to call your `UserSocket.connect/2`
+  `UserSocket.connect/3` callback would set. Alternatively,
+  you can use the `connect/3` helper to call your `UserSocket.connect/3`
   callback and initialize the socket with the socket id:
 
-      {:ok, socket} = connect(UserSocket, %{"some" => "params"})
+      {:ok, socket} = connect(UserSocket, %{"some" => "params"}, %{})
       {:ok, _, socket} = subscribe_and_join(socket, "room:lobby", %{"id" => 3})
 
   Once called, `subscribe_and_join/4` will subscribe the
@@ -40,13 +40,13 @@ defmodule Phoenix.ChannelTest do
   For example, we can use the `push/3` function in the test
   to push messages to the channel (it will invoke `handle_in/3`):
 
-      push socket, "my_event", %{"some" => "data"}
+      push(socket, "my_event", %{"some" => "data"})
 
   Similarly, we can broadcast messages from the test itself
   on the topic that both test and channel are subscribed to,
   triggering `handle_out/3` on the channel:
 
-      broadcast_from socket, "my_event", %{"some" => "data"}
+      broadcast_from(socket, "my_event", %{"some" => "data"})
 
   > Note only `broadcast_from/3` and `broadcast_from!/3` are
   available in tests to avoid broadcast messages to be resent
@@ -66,7 +66,7 @@ defmodule Phoenix.ChannelTest do
   a reference is returned. We can use this reference to
   assert a particular reply was sent from the server:
 
-      ref = push socket, "counter", %{}
+      ref = push(socket, "counter", %{})
       assert_reply ref, :ok, %{"counter" => 1}
 
   ## Checking side-effects
@@ -85,7 +85,7 @@ defmodule Phoenix.ChannelTest do
   Because the whole communication is asynchronous, the
   following test would be very brittle:
 
-      push socket, "publish", %{"id" => 3}
+      push(socket, "publish", %{"id" => 3})
       assert Repo.get_by(Post, id: 3, published: true)
 
   The issue is that we have no guarantees the channel has
@@ -101,7 +101,7 @@ defmodule Phoenix.ChannelTest do
 
   Then expect them in the test:
 
-      ref = push socket, "publish", %{"id" => 3}
+      ref = push(socket, "publish", %{"id" => 3})
       assert_reply ref, :ok
       assert Repo.get_by(Post, id: 3, published: true)
 
@@ -149,17 +149,15 @@ defmodule Phoenix.ChannelTest do
       Process.monitor(socket.channel_pid)
       send(socket.channel_pid, :some_message)
       assert_receive {:DOWN, _, _, _, :normal}
+
   """
 
   alias Phoenix.Socket
-  alias Phoenix.Socket.Message
-  alias Phoenix.Socket.Broadcast
-  alias Phoenix.Socket.Reply
-  alias Phoenix.Socket.Transport
+  alias Phoenix.Socket.{Broadcast, Message, Reply}
   alias Phoenix.Channel.Server
 
   defmodule NoopSerializer do
-    @behaviour Phoenix.Transports.Serializer
+    @behaviour Phoenix.Socket.Serializer
     @moduledoc false
 
     def fastlane!(%Broadcast{} = msg) do
@@ -183,64 +181,49 @@ defmodule Phoenix.ChannelTest do
   end
 
   @doc """
-  Builds a socket.
+  Builds a socket for the given `socket_module`.
 
   The socket is then used to subscribe and join channels.
   Use this function when you want to create a blank socket
-  to pass to functions like `UserSocket.connect/2`.
+  to pass to functions like `UserSocket.connect/3`.
 
-  Otherwise, use `socket/2` if you want to build a socket with
-  id and assigns.
+  Otherwise, use `socket/3` if you want to build a socket with
+  existing id and assigns.
 
-  The socket endpoint is read from the `@endpoint` variable.
+  ## Examples
+
+      socket(MyApp.UserSocket)
+
   """
-  defmacro socket() do
-    if endpoint = Module.get_attribute(__CALLER__.module, :endpoint) do
-      quote do
-        %Socket{serializer: NoopSerializer,
-                transport_pid: self(),
-                endpoint: unquote(endpoint),
-                pubsub_server: unquote(endpoint).__pubsub_server__(),
-                transport: unquote(__MODULE__),
-                transport_name: :channel_test}
-      end
-    else
-      raise "module attribute @endpoint not set for socket/0"
-    end
+  defmacro socket(socket_module) do
+    build_socket(socket_module, nil, [], __CALLER__)
   end
 
   @doc """
-  Builds a socket with given id and assigns.
+  Builds a socket for the given `socket_module` with given id and assigns.
 
-  The socket endpoint is read from the `@endpoint` variable.
+  ## Examples
+
+      socket(MyApp.UserSocket, "user_id", %{some: :assign})
+
   """
-  defmacro socket(id, assigns) do
-    if endpoint = Module.get_attribute(__CALLER__.module, :endpoint) do
-      quote do
-        %Socket{serializer: NoopSerializer,
-                transport_pid: self(),
-                endpoint: unquote(endpoint),
-                pubsub_server: unquote(endpoint).__pubsub_server__(),
-                id: unquote(id),
-                assigns: Enum.into(unquote(assigns), %{}),
-                transport: unquote(__MODULE__),
-                transport_name: :channel_test}
-      end
-    else
-      raise "module attribute @endpoint not set for socket/2"
-    end
+  defmacro socket(socket_module, socket_id, socket_assigns) do
+    build_socket(socket_module, socket_id, socket_assigns, __CALLER__)
   end
 
-  @doc """
-  Initiates a transport connection for the socket handler.
-
-  Useful for testing UserSocket authentication. Returns
-  the result of the handler's `connect/2` callback.
-  """
-  defmacro connect(handler, params) do
-    if endpoint = Module.get_attribute(__CALLER__.module, :endpoint) do
+  defp build_socket(socket, id, assigns, caller) do
+    if endpoint = Module.get_attribute(caller.module, :endpoint) do
       quote do
-        unquote(__MODULE__).__connect__(unquote(endpoint), unquote(handler), unquote(params))
+        %Socket{
+          assigns: Enum.into(unquote(assigns), %{}),
+          endpoint: unquote(endpoint),
+          handler: unquote(socket || first_socket!(endpoint)),
+          id: unquote(id),
+          pubsub_server: unquote(endpoint).__pubsub_server__(),
+          serializer: NoopSerializer,
+          transport: :channel_test,
+          transport_pid: self()
+        }
       end
     else
       raise "module attribute @endpoint not set for socket/2"
@@ -248,33 +231,67 @@ defmodule Phoenix.ChannelTest do
   end
 
   @doc false
-  def __connect__(endpoint, handler, params) do
-    endpoint
-    |> Transport.connect(handler, :channel_test, __MODULE__, NoopSerializer, __stringify__(params))
-    |> subscribe_to_socket_id(endpoint, handler)
+  defmacro socket() do
+    IO.warn "Phoenix.ChannelTest.socket/0 is deprecated, please call socket/1 instead"
+    build_socket(nil, nil, [], __CALLER__)
   end
-  defp subscribe_to_socket_id({:ok, socket}, endpoint, handler) do
-    if topic = handler.id(socket) do
-      :ok = endpoint.subscribe(topic)
+
+  @doc false
+  defmacro socket(id, assigns) do
+    IO.warn "Phoenix.ChannelTest.socket/2 is deprecated, please call socket/3 instead"
+    build_socket(nil, id, assigns, __CALLER__)
+  end
+
+  # TODO v2: Remove this alongside the deprecations above.
+  defp first_socket!(endpoint) do
+    case endpoint.__sockets__ do
+      [] -> raise ArgumentError, "#{inspect endpoint} has no socket declaration"
+      [{_, socket, _} | _] -> socket
     end
-    {:ok, socket}
   end
-  defp subscribe_to_socket_id(error, _endpoint, _handler), do: error
+
+  @doc """
+  Initiates a transport connection for the socket handler.
+
+  Useful for testing UserSocket authentication. Returns
+  the result of the handler's `connect/3` callback.
+  """
+  defmacro connect(handler, params, connect_info \\ quote(do: %{})) do
+    if endpoint = Module.get_attribute(__CALLER__.module, :endpoint) do
+      quote do
+        unquote(__MODULE__).__connect__(unquote(endpoint), unquote(handler), unquote(params), unquote(connect_info))
+      end
+    else
+      raise "module attribute @endpoint not set for socket/2"
+    end
+  end
+
+  @doc false
+  def __connect__(endpoint, handler, params, connect_info) do
+    map = %{
+      endpoint: endpoint,
+      transport: :channel_test,
+      options: [serializer: [{NoopSerializer, "~> 1.0.0"}]],
+      params: __stringify__(params),
+      connect_info: connect_info
+    }
+
+    with {:ok, state} <- handler.connect(map),
+         {:ok, {_, socket}} = handler.init(state),
+         do: {:ok, socket}
+  end
 
   @doc "See `subscribe_and_join!/4`."
   def subscribe_and_join!(%Socket{} = socket, topic) when is_binary(topic) do
-    subscribe_and_join!(socket, topic, %{})
+    subscribe_and_join!(socket, nil, topic, %{})
   end
+
   @doc "See `subscribe_and_join!/4`."
   def subscribe_and_join!(%Socket{} = socket, topic, payload)
       when is_binary(topic) and is_map(payload) do
-
-    {channel, opts} = match_topic_to_channel!(socket, topic)
-
-    socket
-    |> with_opts(opts)
-    |> subscribe_and_join!(channel, topic, payload)
+    subscribe_and_join!(socket, nil, topic, payload)
   end
+
   @doc """
   Same as `subscribe_and_join/4`, but returns either the socket
   or throws an error.
@@ -292,18 +309,15 @@ defmodule Phoenix.ChannelTest do
 
   @doc "See `subscribe_and_join/4`."
   def subscribe_and_join(%Socket{} = socket, topic) when is_binary(topic) do
-    subscribe_and_join(socket, topic, %{})
+    subscribe_and_join(socket, nil, topic, %{})
   end
+
   @doc "See `subscribe_and_join/4`."
   def subscribe_and_join(%Socket{} = socket, topic, payload)
       when is_binary(topic) and is_map(payload) do
-
-    {channel, opts} = match_topic_to_channel!(socket, topic)
-
-    socket
-    |> with_opts(opts)
-    |> subscribe_and_join(channel, topic, payload)
+    subscribe_and_join(socket, nil, topic, payload)
   end
+
   @doc """
   Subscribes to the given topic and joins the channel
   under the given topic and payload.
@@ -328,17 +342,12 @@ defmodule Phoenix.ChannelTest do
 
   @doc "See `join/4`."
   def join(%Socket{} = socket, topic) when is_binary(topic) do
-    join(socket, topic, %{})
+    join(socket, nil, topic, %{})
   end
+
   @doc "See `join/4`."
-  def join(%Socket{} = socket, topic, payload)
-      when is_binary(topic) and is_map(payload) do
-
-    {channel, opts} = match_topic_to_channel!(socket, topic)
-
-    socket
-    |> with_opts(opts)
-    |> join(channel, topic, payload)
+  def join(%Socket{} = socket, topic, payload) when is_binary(topic) and is_map(payload) do
+    join(socket, nil, topic, payload)
   end
 
   @doc """
@@ -351,12 +360,23 @@ defmodule Phoenix.ChannelTest do
   """
   def join(%Socket{} = socket, channel, topic, payload \\ %{})
       when is_atom(channel) and is_binary(topic) and is_map(payload) do
+    message = %Message{
+      event: "phx_join",
+      payload: payload,
+      topic: topic,
+      ref: System.unique_integer([:positive])
+    }
 
-    ref = System.unique_integer([:positive])
-    socket = Transport.build_channel_socket(socket, channel, topic, ref, [])
+    {channel, opts} =
+      if channel do
+        {channel, []}
+      else
+        match_topic_to_channel!(socket, topic)
+      end
 
-    case Server.join(socket, payload) do
+    case Server.join(socket, channel, message, opts) do
       {:ok, reply, pid} ->
+        Process.link(pid)
         {:ok, reply, Server.socket(pid)}
       {:error, _} = error ->
         error
@@ -370,7 +390,7 @@ defmodule Phoenix.ChannelTest do
 
   ## Examples
 
-      iex> push socket, "new_message", %{id: 1, content: "hello"}
+      iex> push(socket, "new_message", %{id: 1, content: "hello"})
       reference
 
   """
@@ -391,9 +411,9 @@ defmodule Phoenix.ChannelTest do
   end
 
   @doc """
-  Emulates the client closing the channel.
+  Emulates the client closing the socket.
 
-  Closing channels is synchronous and has a default timeout
+  Closing socket is synchronous and has a default timeout
   of 5000 milliseconds.
   """
   def close(socket, timeout \\ 5000) do
@@ -408,7 +428,7 @@ defmodule Phoenix.ChannelTest do
 
   ## Examples
 
-      iex> broadcast_from socket, "new_message", %{id: 1, content: "hello"}
+      iex> broadcast_from(socket, "new_message", %{id: 1, content: "hello"})
       :ok
 
   """
@@ -436,7 +456,8 @@ defmodule Phoenix.ChannelTest do
   In the assertion above, we don't particularly care about
   the data being sent, as long as something was sent.
 
-  The timeout is in milliseconds and defaults to 100ms.
+  The timeout is in milliseconds and defaults to the `:assert_receive_timeout`
+  set on the `:ex_unit` application (which defaults to 100ms).
 
   **NOTE:** Because event and payload are patterns, they will be matched.  This
   means that if you wish to assert that the received payload is equivalent to
@@ -455,7 +476,7 @@ defmodule Phoenix.ChannelTest do
       # The code above does not assert the payload matches the described map.
 
   """
-  defmacro assert_push(event, payload, timeout \\ 100) do
+  defmacro assert_push(event, payload, timeout \\ Application.fetch_env!(:ex_unit, :assert_receive_timeout)) do
     quote do
       assert_receive %Phoenix.Socket.Message{
                         event: unquote(event),
@@ -469,12 +490,13 @@ defmodule Phoenix.ChannelTest do
 
   Like `assert_push`, the event and payload are patterns.
 
-  The timeout is in milliseconds and defaults to 100ms.
+  The timeout is in milliseconds and defaults to the `:refute_receive_timeout`
+  set on the `:ex_unit` application (which defaults to 100ms).
   Keep in mind this macro will block the test by the
   timeout value, so use it only when necessary as overuse
   will certainly slow down your test suite.
   """
-  defmacro refute_push(event, payload, timeout \\ 100) do
+  defmacro refute_push(event, payload, timeout \\ Application.fetch_env!(:ex_unit, :refute_receive_timeout)) do
     quote do
       refute_receive %Phoenix.Socket.Message{
                         event: unquote(event),
@@ -488,15 +510,16 @@ defmodule Phoenix.ChannelTest do
 
   Notice status and payload are patterns. This means one can write:
 
-      ref = push channel, "some_event"
+      ref = push(channel, "some_event")
       assert_reply ref, :ok, %{"data" => _}
 
   In the assertion above, we don't particularly care about
   the data being sent, as long as something was replied.
 
-  The timeout is in milliseconds and defaults to 100ms.
+  The timeout is in milliseconds and defaults to the `:assert_receive_timeout`
+  set on the `:ex_unit` application (which defaults to 100ms).
   """
-  defmacro assert_reply(ref, status, payload \\ Macro.escape(%{}), timeout \\ 100) do
+  defmacro assert_reply(ref, status, payload \\ Macro.escape(%{}), timeout \\ Application.fetch_env!(:ex_unit, :assert_receive_timeout)) do
     quote do
       ref = unquote(ref)
       assert_receive %Phoenix.Socket.Reply{
@@ -512,12 +535,13 @@ defmodule Phoenix.ChannelTest do
 
   Like `assert_reply`, the event and payload are patterns.
 
-  The timeout is in milliseconds and defaults to 100ms.
+  The timeout is in milliseconds and defaults to the `:refute_receive_timeout`
+  set on the `:ex_unit` application (which defaults to 100ms).
   Keep in mind this macro will block the test by the
   timeout value, so use it only when necessary as overuse
   will certainly slow down your test suite.
   """
-  defmacro refute_reply(ref, status, payload \\ Macro.escape(%{}), timeout \\ 100) do
+  defmacro refute_reply(ref, status, payload \\ Macro.escape(%{}), timeout \\ Application.fetch_env!(:ex_unit, :refute_receive_timeout)) do
     quote do
       ref = unquote(ref)
       refute_receive %Phoenix.Socket.Reply{
@@ -542,9 +566,10 @@ defmodule Phoenix.ChannelTest do
   In the assertion above, we don't particularly care about
   the data being sent, as long as something was sent.
 
-  The timeout is in milliseconds and defaults to 100ms.
+  The timeout is in milliseconds and defaults to the `:assert_receive_timeout`
+  set on the `:ex_unit` application (which defaults to 100ms).
   """
-  defmacro assert_broadcast(event, payload, timeout \\ 100) do
+  defmacro assert_broadcast(event, payload, timeout \\ Application.fetch_env!(:ex_unit, :assert_receive_timeout)) do
     quote do
       assert_receive %Phoenix.Socket.Broadcast{event: unquote(event),
                                                payload: unquote(payload)}, unquote(timeout)
@@ -556,12 +581,13 @@ defmodule Phoenix.ChannelTest do
 
   Like `assert_broadcast`, the event and payload are patterns.
 
-  The timeout is in milliseconds and defaults to 100ms.
+  The timeout is in milliseconds and defaults to the `:refute_receive_timeout`
+  set on the `:ex_unit` application (which defaults to 100ms).
   Keep in mind this macro will block the test by the
   timeout value, so use it only when necessary as overuse
   will certainly slow down your test suite.
   """
-  defmacro refute_broadcast(event, payload, timeout \\ 100) do
+  defmacro refute_broadcast(event, payload, timeout \\ Application.fetch_env!(:ex_unit, :refute_receive_timeout)) do
     quote do
       refute_receive %Phoenix.Socket.Broadcast{event: unquote(event),
                                                payload: unquote(payload)}, unquote(timeout)
@@ -571,15 +597,17 @@ defmodule Phoenix.ChannelTest do
   defp match_topic_to_channel!(socket, topic) do
     unless socket.handler do
       raise """
-      No socket handler found to lookup channel for topic #{inspect topic}.
-      Use `connect/2` when calling `subscribe_and_join` without a channel, for example:
+      no socket handler found to lookup channel for topic #{inspect topic}.
+      Use connect/3 when calling subscribe_and_join/* (or subscribe_and_join!/*)
+      without a channel, for example:
 
-          {:ok, socket} = connect(UserSocket, %{})
+          {:ok, socket} = connect(UserSocket, %{}, %{})
           socket = subscribe_and_join!(socket, "foo:bar", %{})
+
       """
     end
 
-    case socket.handler.__channel__(topic, socket.transport_name) do
+    case socket.handler.__channel__(topic) do
       {channel, opts} when is_atom(channel) -> {channel, opts}
       _ -> raise "no channel found for topic #{inspect topic} in #{inspect socket.handler}"
     end
@@ -595,8 +623,4 @@ defmodule Phoenix.ChannelTest do
 
   defp stringify_kv({k, v}),
     do: {to_string(k), __stringify__(v)}
-
-  defp with_opts(%Socket{} = socket, opts) do
-    %Socket{socket | assigns: Map.merge(socket.assigns, opts[:assigns] || %{})}
-  end
 end

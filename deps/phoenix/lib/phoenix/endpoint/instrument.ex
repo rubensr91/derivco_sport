@@ -23,7 +23,7 @@ defmodule Phoenix.Endpoint.Instrument do
       ## Examples
 
           instrument :render_view, %{view: "index.html"}, fn ->
-            render conn, "index.html"
+            render(conn, "index.html")
           end
 
       """
@@ -95,7 +95,7 @@ defmodule Phoenix.Endpoint.Instrument do
       raise ":instrumenters must be a list of instrumenter modules"
     end
 
-    events_to_instrumenters([Phoenix.Logger | instrumenters])
+    events_to_instrumenters(instrumenters)
   end
 
   # Strips a `Macro.Env` struct, leaving only interesting compile-time metadata.
@@ -143,7 +143,7 @@ defmodule Phoenix.Endpoint.Instrument do
             unquote(inst).unquote(event)(:start, var!(compile), var!(runtime))
           catch
             kind, error ->
-              Logger.error unquote(error_prefix) <> Exception.format(kind, error, System.stacktrace())
+              Logger.error [unquote(error_prefix), Exception.format(kind, error, System.stacktrace())]
           end
       end
     end
@@ -165,7 +165,7 @@ defmodule Phoenix.Endpoint.Instrument do
           unquote(inst).unquote(event)(:stop, var!(diff), unquote(build_result_variable(index)))
         catch
           kind, error ->
-            Logger.error unquote(error_prefix) <> Exception.format(kind, error, System.stacktrace())
+            Logger.error unquote(error_prefix) <> Exception.format(kind, error)
         end
       end
     end
