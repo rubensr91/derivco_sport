@@ -3,11 +3,11 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
 
   @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
   def index(conn, _params) do
-    File.read!("data.csv")
+    data = File.read!("data.csv")
     |> String.split("\r\n")
     |> Enum.map(&String.split(&1, ",") |> IO.inspect)
 
-    conn
+    render(conn, "index.html", data)
   end
 
 end

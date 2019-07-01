@@ -1,8 +1,8 @@
 defmodule DerivcoSportWeb.Api.LaLigaView do
   use DerivcoSportWeb, :view
 
-  def render("index.json", %{albums: albums}) do
-    %{data: render_many(albums, DerivcoSportWeb.Api.LaLigaView, "data.csv")}
+  def render("index.json", data) do
+    %{data: render_many(data, DerivcoSportWeb.Api.LaLigaView, "data.csv")}
   end
 
   def render("data.csv", %{album: album}) do
