@@ -3,7 +3,7 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
 
   # defmodule D do
   #   defstruct [:conn, :params, :response, :offer, :ts]
-  # end  
+  # end
 
   @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
   def index(conn, _params) do
@@ -26,12 +26,12 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
     Phoenix.View.render(DerivcoSportWeb.Api.LaLigaView, "index.html", data: data_csv)
   end
 
-  # @spec get_body 
+  # @spec get_body
   defp get_body({:safe, data}) do
     data
   end
 
-  # @spec response 
+  # @spec response
   defp response(data, conn) do
     conn
     |> send_resp(200, data)
