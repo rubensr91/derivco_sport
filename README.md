@@ -18,3 +18,12 @@ Ready to run in production? Please [check our deployment guides](http://www.phoe
   * Docs: https://hexdocs.pm/phoenix
   * Mailing list: http://groups.google.com/group/phoenix-talk
   * Source: https://github.com/phoenixframework/phoenix
+
+
+sudo -u postgres psql
+ALTER USER postgres PASSWORD 'postgres';
+
+mix archive.install hex phx_new 1.4.8
+rm -rf _build/ deps/
+mix deps.get
+mix phx.server
