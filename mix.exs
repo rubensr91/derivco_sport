@@ -44,6 +44,7 @@ defmodule DerivcoSport.Mixfile do
       {:cowboy, "~> 1.0"},
       {:httpoison, "~> 1.5.1", override: true},
       {:poison, "~> 2.2"},
+      {:exprotobuf, "~> 1.2.9"}
     ]
   end
 
