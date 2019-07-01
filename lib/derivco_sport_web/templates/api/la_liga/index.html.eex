@@ -1,3 +1,5 @@
 <div class="jumbotron">
-  <p><%= @data %></p>
+  <%= for p <- Enum.map(@data, &String.split(&1, "")) do %>
+    <p><%= p %></p>
+  <% end %>
 </div>

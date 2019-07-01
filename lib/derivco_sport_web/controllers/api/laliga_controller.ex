@@ -9,7 +9,6 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
   def index(conn, _params) do
     File.read!("data.csv")
     |> String.split("\r\n")
-    |> Enum.map(&String.split(&1, ","))
     |> view_render()
     |> get_body(conn)
   end
