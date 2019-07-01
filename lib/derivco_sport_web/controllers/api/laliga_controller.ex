@@ -7,22 +7,28 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
 
   @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
   def index(conn, _params) do
-    File.read!("data.csv")
-    |> String.split("\r\n")
-    |> view_render()
-    |> get_body(conn)
+    read_and_split_file("data.csv")
+    |> render_view()
+    |> get_body()
+    |> response(conn)
   end
 
-  # @spec view_render 
-  defp view_render(data_csv) do
+  # @spec read_and_split_file
+  defp read_and_split_file(file) do
+    file
+    |> File.read!()
+    |> String.split("\r\n")
+  end
+
+  # @spec render_view
+  defp render_view(data_csv) do
     #hay que ver cómo hacer un bucle para listar los datos en el html
     Phoenix.View.render(DerivcoSportWeb.Api.LaLigaView, "index.html", data: data_csv)
   end
 
   # @spec get_body 
-  defp get_body({:safe, data}, conn) do
+  defp get_body({:safe, data}) do
     data
-    |> response(conn)
   end
 
   # @spec response 
