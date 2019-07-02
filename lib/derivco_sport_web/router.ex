@@ -16,15 +16,15 @@ defmodule DerivcoSportWeb.Router do
   scope "/", DerivcoSportWeb do
     pipe_through :browser # Use the default browser stack
 
-    get "/laliga", LaLigaController, :index
-    get "/", PageController, :index
+    get("/", PageController, :index)
+    get("/metrics", PrometheusExporter, :metrics)
   end
 
   # Other scopes may use custom stacks.
   scope "/api", DerivcoSportWeb.Api, as: :api do
     pipe_through :api
 
-    resources "/laliga", LaLigaController, only: [:show, :index]
+    resources("/laliga", LaLigaController, only: [:show, :index])
   end
 
 end

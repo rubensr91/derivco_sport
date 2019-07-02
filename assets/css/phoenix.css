@@ -1,7 +1,9 @@
 /* Includes Bootstrap as well as some default style for the starter
  * application. This can be safely deleted to start fresh.
  */
-
+ table, th, td {
+  border: 1px solid black;
+}
 /*!
  * Bootstrap v3.3.5 (http://getbootstrap.com)
  * Copyright 2011-2015 Twitter, Inc.
