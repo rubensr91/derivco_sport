@@ -2,19 +2,20 @@ defmodule DerivcoSportWeb.Router do
   use DerivcoSportWeb, :router
 
   pipeline :browser do
-    plug :accepts, ["html"]
-    plug :fetch_session
-    plug :fetch_flash
-    plug :protect_from_forgery
-    plug :put_secure_browser_headers
+    plug(:accepts, ["html"])
+    plug(:fetch_session)
+    plug(:fetch_flash)
+    plug(:protect_from_forgery)
+    plug(:put_secure_browser_headers)
   end
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug(:accepts, ["json"])
   end
 
   scope "/", DerivcoSportWeb do
-    pipe_through :browser # Use the default browser stack
+    # Use the default browser stack
+    pipe_through(:browser)
 
     get("/", PageController, :index)
     get("/metrics", PrometheusExporter, :metrics)
@@ -22,9 +23,8 @@ defmodule DerivcoSportWeb.Router do
 
   # Other scopes may use custom stacks.
   scope "/api", DerivcoSportWeb.Api, as: :api do
-    pipe_through :api
+    pipe_through(:api)
 
     resources("/laliga", LaLigaController, only: [:show, :index])
   end
-
 end
