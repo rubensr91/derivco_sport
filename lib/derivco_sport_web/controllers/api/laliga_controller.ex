@@ -4,6 +4,7 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
   """
   require Logger
   use DerivcoSportWeb, :controller
+  alias NimbleCSV.RFC4180, as: CSV
 
   defmodule State do
     @moduledoc """
@@ -23,19 +24,10 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
   @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
 
   def index(conn, _params) do
-    prueba()
-
     read_and_split_file("data.csv")
     |> render_view()
     |> get_body()
     |> response(conn)
-  end
-
-  def prueba() do
-    File.stream!("data.csv")
-    |> Stream.map(&String.replace(&1, ",", "%"))
-    |> Enum.count()
-    |> IO.inspect()
   end
 
   # @spec read_and_split_file
@@ -43,7 +35,24 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
   defp read_and_split_file(file) do
     case File.read(file) do
       {:ok, data} ->
-        {:ok, String.split(data, "\r\n")}
+        data
+        |> CSV.parse_string()
+        |> Enum.map(fn [
+                         coma,
+                         div,
+                         season,
+                         date,
+                         hometeam,
+                         awayteam,
+                         fthg,
+                         ftag,
+                         ftr,
+                         hthg,
+                         htag,
+                         htr
+                       ] ->
+          %{date: date, hometeam: hometeam, awayteam: awayteam, fthg: fthg, ftag: ftag}
+        end)
 
       {:error, :enoent} ->
         {:error, "Error reading file"}
@@ -52,8 +61,9 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
 
   # @spec render_view
 
-  defp render_view({:ok, data_csv}) do
-    Phoenix.View.render(DerivcoSportWeb.Api.LaLigaView, "index.html", data: data_csv)
+  defp render_view(data_csv) do
+    IO.inspect(data_csv)
+    Phoenix.View.render(DerivcoSportWeb.Api.LaLigaView, "index.html", games: data_csv)
   end
 
   defp render_view({:error, _reason} = error), do: error
