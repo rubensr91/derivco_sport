@@ -1,13 +1,23 @@
 
 defmodule DerivcoSportWeb.Api.LaLigaController do
+   @moduledoc """
+
+   """
   require Logger
   use DerivcoSportWeb, :controller
 
   defmodule State do
+    @moduledoc """
+      state of application
+    """    
     defstruct ~w(conn response)a
   end
 
   defmodule Error do
+    @moduledoc """
+      error of application
+      for example when crash while reading file
+    """        
     defstruct ~w(state reason)a
   end
 
