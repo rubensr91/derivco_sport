@@ -27,3 +27,12 @@ mix archive.install hex phx_new 1.4.8
 rm -rf _build/ deps/
 mix deps.get
 mix phx.server
+
+## DIALYZER
+ * mix do deps.get, deps.compile, dialyzer --plt
+ * mix dialyzer
+## CREDO
+ * mix credo
+## COVERALLS
+ * mkdir -p priv/repo/migrations
+ * MIX_ENV=test mix coveralls
