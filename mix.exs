@@ -6,9 +6,10 @@ defmodule DerivcoSport.Mixfile do
       app: :derivco_sport,
       version: "0.1.0",
       elixir: "~> 1.9",
-      elixirc_paths: elixirc_paths(Mix.env),
-      compilers: [:phoenix, :gettext] ++ Mix.compilers,
-      start_permanent: Mix.env == :prod,
+      test_coverage: [tool: ExCoveralls],
+      elixirc_paths: elixirc_paths(Mix.env()),
+      compilers: [:phoenix, :gettext] ++ Mix.compilers(),
+      start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
     ]
@@ -26,7 +27,7 @@ defmodule DerivcoSport.Mixfile do
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_),     do: ["lib"]
+  defp elixirc_paths(_), do: ["lib"]
 
   # Specifies your project dependencies.
   #
@@ -44,7 +45,17 @@ defmodule DerivcoSport.Mixfile do
       {:cowboy, "~> 1.0"},
       {:httpoison, "~> 1.5.1", override: true},
       {:poison, "~> 2.2"},
-      {:exprotobuf, "~> 1.2.9"}
+      {:nimble_csv, "~> 0.6"},
+      {:jason, "~> 1.1.2"},
+      {:exprotobuf, "~> 1.2.9"},
+      {:prometheus, "~> 4.0"},
+      {:prometheus_ex, "~> 3.0"},
+      {:prometheus_phoenix, "~> 1.2.1"},
+      {:prometheus_plugs, "~> 1.1.5"},
+      {:prometheus_process_collector, "~> 1.3"},
+      {:credo, "~> 0.4", only: [:dev, :test]},
+      {:excoveralls, "~> 0.8", only: :test},
+      {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false}
     ]
   end
 
@@ -58,7 +69,7 @@ defmodule DerivcoSport.Mixfile do
     [
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      "test": ["ecto.create --quiet", "ecto.migrate", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate", "test"]
     ]
   end
 end

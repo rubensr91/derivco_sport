@@ -1,5 +1,20 @@
-<div class="jumbotron">
-  <%= for p <- Enum.map(@data, &String.split(&1, "")) do %>
-    <p><%= p %></p>
+<table style="width: 100%; border: 1px;">
+  <tr>
+    <th>Season</th>
+    <th>Home Team</th>
+    <th></th>
+    <th>Away Team</th>
+    <th></th>
+    <th>Date</th>
+  </tr>
+  <%= for game <- @games do %>
+    <tr>
+      <td><%= game.season %></td>
+      <td><%= game.hometeam %></td>
+      <td><%= game.fthg %></td>
+      <td><%= game.awayteam %></td>
+      <td><%= game.ftag %></td>
+      <td><%= game.date %></td>
+    </tr>
   <% end %>
-</div>
+</table>
