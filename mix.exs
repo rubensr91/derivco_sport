@@ -33,18 +33,23 @@ defmodule DerivcoSport.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.4.8"},
-      {:phoenix_pubsub, "~> 1.0"},
-      {:phoenix_ecto, "~> 3.2"},
-      {:postgrex, ">= 0.0.0"},
-      {:phoenix_html, "~> 2.10"},
-      {:phoenix_live_reload, "~> 1.0", only: :dev},
-      {:gettext, "~> 0.11"},
-      {:plug_cowboy, "~> 1.0"},
-      {:cowboy, "~> 1.0"},
-      {:httpoison, "~> 1.5.1", override: true},
-      {:poison, "~> 2.2"},
-      {:exprotobuf, "~> 1.2.9"}
+      {:phoenix,                      "~> 1.4.8"  },
+      {:phoenix_pubsub,               "~> 1.0"    },
+      {:phoenix_ecto,                 "~> 3.2"    },
+      {:postgrex,                     ">= 0.0.0"  },
+      {:phoenix_html,                 "~> 2.10"   },
+      {:phoenix_live_reload,          "~> 1.0",     only: :dev},
+      {:gettext,                      "~> 0.11"   },
+      {:plug_cowboy,                  "~> 1.0"    },
+      {:cowboy,                       "~> 1.0"    },
+      {:httpoison,                    "~> 1.5.1",   override: true  },
+      {:poison,                       "~> 2.2"    },
+      {:exprotobuf,                   "~> 1.2.9"  },
+      {:prometheus,                   "~> 4.0"    },
+      {:prometheus_ex,                "~> 3.0"    },
+      {:prometheus_phoenix,           "~> 1.2.1"  },
+      {:prometheus_plugs,             "~> 1.1.5"  },
+      {:prometheus_process_collector, "~> 1.3"    },           
     ]
   end
 

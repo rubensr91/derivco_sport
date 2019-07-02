@@ -37,6 +37,11 @@ defmodule DerivcoSportWeb.Endpoint do
 
   plug DerivcoSportWeb.Router
 
+  # # makes the /metrics URL happen
+  plug(DerivcoSportWeb.PrometheusExporter)
+  # # measures pipeline exec times
+  plug(DerivcoSportWeb.PipelineInstrumenter)  
+
   @doc """
   Callback invoked for dynamically configuring the endpoint.
 
