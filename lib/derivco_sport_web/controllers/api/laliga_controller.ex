@@ -17,29 +17,37 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
 
   # @spec read_and_split_file
   defp read_and_split_file(file) do
-    case File.read!(file) do
+    case File.read(file) do
       {:ok, data} -> 
-        String.split(data, "\r\n")
-      {:error, _reason} -> 
-        Logger.error("Error reading file")
+        {:ok, String.split(data, "\r\n")}
+      {:error, :enoent} ->
+        {:error, "Error reading file"}
     end
-    
   end
 
   # @spec render_view
-  defp render_view(data_csv) do
-    #hay que ver cómo hacer un bucle para listar los datos en el html
+  defp render_view({:ok, data_csv}) do
     Phoenix.View.render(DerivcoSportWeb.Api.LaLigaView, "index.html", data: data_csv)
   end
+  defp render_view({:error, _reason} = error), do: error
 
   # @spec get_body
   defp get_body({:safe, data}) do
-    data
+    {:ok, data}
   end
+  defp get_body({:error, _reason} = error), do: error
 
   # @spec response
-  defp response(data, conn) do
+  defp response({:ok, data}, conn) do
+    Logger.info("Read file correctly!")
+
     conn
     |> send_resp(200, data)
   end
+  defp response({:error, reason}, conn) do
+    Logger.error(reason)
+
+    conn
+    |> send_resp(400, reason)
+  end  
 end
