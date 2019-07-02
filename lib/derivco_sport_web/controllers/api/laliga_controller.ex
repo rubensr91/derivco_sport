@@ -55,12 +55,17 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
                          htr
                        ] ->
           %{
+            div: div,
             season: season,
             date: date,
             hometeam: hometeam,
             awayteam: awayteam,
             fthg: fthg,
-            ftag: ftag
+            ftag: ftag,
+            ftr: ftr,
+            hthg: hthg,
+            htag: htag,
+            htr: htr
           }
         end)
 
@@ -82,6 +87,7 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
     Logger.info("Read file correctly!")
 
     conn
+    |> put_resp_content_type("application/json")
     |> send_resp(200, data)
   end
 
