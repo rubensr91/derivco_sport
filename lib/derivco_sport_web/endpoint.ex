@@ -35,12 +35,13 @@ defmodule DerivcoSportWeb.Endpoint do
     key: "_derivco_sport_key",
     signing_salt: "hVgoazzh"
 
-  plug DerivcoSportWeb.Router
 
   # # makes the /metrics URL happen
   plug(DerivcoSportWeb.PrometheusExporter)
   # # measures pipeline exec times
   plug(DerivcoSportWeb.PipelineInstrumenter)  
+
+  plug(DerivcoSportWeb.Router)
 
   @doc """
   Callback invoked for dynamically configuring the endpoint.

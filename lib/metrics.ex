@@ -23,15 +23,15 @@ defmodule DerivcoSportWeb.Metrics do
   def setup(_args) do
 
     Counter.declare(
-      name: :version,
-      help: "version metrics",
-      labels: [:version]
+      name: :git_version,
+      help: "git",
+      labels: [:git_version]
     )
 
     {:ok, :ready}
   end
 
-  @spec add(atom, integer, keyword) ::result
+  @spec add(atom, integer, keyword) :: result
   def add(key, quantity, opts \\ [labels: []]) do
     with :ok <-  do_add(key, quantity, opts[:labels]) do
       do_get(key, opts[:labels])

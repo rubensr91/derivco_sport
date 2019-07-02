@@ -13,8 +13,8 @@ defmodule DerivcoSport.Application do
     DerivcoSportWeb.PrometheusExporter.setup()
 
     commit = :os.cmd('git rev-parse --short HEAD') |> to_string |> String.trim_trailing("\n")
-    v = "0.1.0+#{commit}"
-    DerivcoSportWeb.Metrics.inc(:version, [labels: [v]])       
+    version = "0.1.0+#{commit}"
+    DerivcoSportWeb.Metrics.inc(:git_version, [labels: [version]])
 
     # Define workers and child supervisors to be supervised
     children = [
