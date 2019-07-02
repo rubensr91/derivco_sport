@@ -6,6 +6,8 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
   use DerivcoSportWeb, :controller
   alias NimbleCSV.RFC4180, as: CSV
 
+  @csv "data.csv"
+
   defmodule State do
     @moduledoc """
       state of application
@@ -23,16 +25,17 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
 
   @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
 
-  def index(conn, _params) do
-    read_and_split_file("data.csv")
-    |> render_view()
-    |> get_body()
+  def index(conn, params \\ []) do
+    @csv
+    |> read_file()
+    |> filter_or_not_by_params(params)
+    |> Jason.encode!()
     |> response(conn)
   end
 
-  # @spec read_and_split_file
+  # @spec read_file
 
-  defp read_and_split_file(file) do
+  defp read_file(file) do
     case File.read(file) do
       {:ok, data} ->
         data
@@ -51,7 +54,14 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
                          htag,
                          htr
                        ] ->
-          %{date: date, hometeam: hometeam, awayteam: awayteam, fthg: fthg, ftag: ftag}
+          %{
+            season: season,
+            date: date,
+            hometeam: hometeam,
+            awayteam: awayteam,
+            fthg: fthg,
+            ftag: ftag
+          }
         end)
 
       {:error, :enoent} ->
@@ -59,26 +69,16 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
     end
   end
 
-  # @spec render_view
-
-  defp render_view(data_csv) do
-    IO.inspect(data_csv)
-    Phoenix.View.render(DerivcoSportWeb.Api.LaLigaView, "index.html", games: data_csv)
+  # @spec filter_or_not_by_params
+  defp filter_or_not_by_params(file, params) when is_map(params) and map_size(params) > 0 do
+    Enum.filter(file, &(&1.season == params["season"]))
   end
 
-  defp render_view({:error, _reason} = error), do: error
-
-  # @spec get_body
-
-  defp get_body({:safe, data}) do
-    {:ok, data}
-  end
-
-  defp get_body({:error, _reason} = error), do: error
+  defp filter_or_not_by_params(file, _params), do: file
 
   # @spec response
 
-  defp response({:ok, data}, conn) do
+  defp response(data, conn) do
     Logger.info("Read file correctly!")
 
     conn
