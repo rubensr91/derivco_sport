@@ -1,6 +1,7 @@
+
 defmodule DerivcoSportWeb.Api.LaLigaController do
-  use DerivcoSportWeb, :controller
   require Logger
+  use DerivcoSportWeb, :controller
 
   # defmodule D do
   #   defstruct [:conn, :params, :response, :offer, :ts]
@@ -16,15 +17,13 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
 
   # @spec read_and_split_file
   defp read_and_split_file(file) do
-    Logger.
-    file
     case File.read!(file) do
-      true -> 
-        Logger.info("The file has been read")
-      false -> 
-        Logger.("Error reading file")
+      {:ok, data} -> 
+        String.split(data, "\r\n")
+      {:error, _reason} -> 
+        Logger.error("Error reading file")
     end
-    |> String.split("\r\n")
+    
   end
 
   # @spec render_view

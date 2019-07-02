@@ -16,7 +16,6 @@ defmodule DerivcoSportWeb.Router do
   scope "/", DerivcoSportWeb do
     pipe_through :browser # Use the default browser stack
 
-    get "/laliga", LaLigaController, :index
     get "/", PageController, :index
   end
 
