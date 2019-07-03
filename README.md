@@ -19,24 +19,22 @@ Ready to run in production? Please [check our deployment guides](http://www.phoe
   * Mailing list: http://groups.google.com/group/phoenix-talk
   * Source: https://github.com/phoenixframework/phoenix
 
-
-sudo -u postgres psql
-ALTER USER postgres PASSWORD 'postgres';
-
-mix archive.install hex phx_new 1.4.8
-rm -rf _build/ deps/
+git clone ...
+cd into the folder
 mix deps.get
-mix phx.server
+mix compile
+iex -S mix
 
 ## DIALYZER
  * mix do deps.get, deps.compile, dialyzer --plt
  * mix dialyzer
+ 
 ## CREDO
  * mix credo
+
 ## COVERALLS
  * mkdir -p priv/repo/migrations
  * MIX_ENV=test mix coveralls
-
 
 ## DOCKER
  * sudo apt-get update && sudo apt-get install \ apt-transport-https \ ca-certificates \ curl \ gnupg-agent \ software-properties-common

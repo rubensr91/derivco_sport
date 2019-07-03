@@ -14,10 +14,6 @@ RUN set -xe \
 	&& rm elixir-src.tar.gz \
 	&& cd /usr/local/src/elixir \
 	&& make install clean \
-	&& git clone https://github.com/rubensr91/derivco_sport.git \
-	&& cd derivco_sport \
-	&& mix deps.get \
-	&& mix compile \
-	&& cd	
+	&& git clone https://github.com/rubensr91/derivco_sport.git
 
 CMD ["iex"]
