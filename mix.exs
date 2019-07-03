@@ -32,19 +32,17 @@ defmodule Derivco.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-
       {:httpoison, "~> 1.4"},
-      {:plug_cowboy,      "~> 2.0"},
-      {:plug,             "~> 1.3"},
+      {:plug_cowboy, "~> 2.0"},
+      {:plug, "~> 1.3"},
       {:prometheus_ex, "~> 3.0"},
       {:prometheus_plugs, "~> 1.1.5"},
       {:nimble_csv, "~> 0.6"},
-      {:mix_test_watch,   "~> 0.8", only: [:dev, :test], runtime: false},
+      {:mix_test_watch, "~> 0.8", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.1.2"},
       # {:credo, "~> 0.4", only: [:dev, :test]},
       {:excoveralls, "~> 0.8", only: :test},
       {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false}
     ]
   end
-
 end

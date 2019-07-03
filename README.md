@@ -1,15 +1,23 @@
-# DerivcoSport
+ # DerivcoSport
+ * This is my test to Derivco Sport
+ * I have make an API with Plug to offer games results
+ * Follow the steps to install my application 
+  or if you know docker you can download my repo --> docker pull rubensr91/laliga
 
-git clone https://github.com/rubensr91/derivco_sport.git
-cd derivco_sport/
-mix deps.get
-mix compile
-iex -S mix
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
-To see all games results
-http://localhost:4000/api/laliga
-To see filter results
-http://localhost:4000/api/laliga?season=201617
+ # HOW TO
+ * git clone https://github.com/rubensr91/derivco_sport.git
+ * cd derivco_sport/
+ * mix deps.get
+ * mix compile
+ * iex -S mix
+ * To see if everything run ok, the next step must to return "pong" in the browser
+ * http://localhost:4001/ping 
+ * To see all games results
+ * http://localhost:4001/api/laliga
+ * To see filter results
+ * http://localhost:4001/api/laliga?season=201617
+ * To see metrics of the aplication and git commit version
+ * http://localhost:4001/metrics
 
 ## DIALYZER
  * mix do deps.get, deps.compile, dialyzer --plt

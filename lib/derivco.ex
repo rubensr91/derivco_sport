@@ -12,6 +12,10 @@ defmodule Derivco do
     PipelineInstrumenter.setup()
     PrometheusExporter.setup()
 
+    commit = :os.cmd('git rev-parse --short HEAD') |> to_string |> String.trim_trailing("\n")
+    v = "0.1.0+#{commit}"
+    Metrics.inc(:git_version, [labels: [v]])
+
     children = [
       Cowboy.child_spec(
         scheme: :http,

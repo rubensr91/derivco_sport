@@ -14,6 +14,7 @@ defmodule Derivco.Router do
 
   get("/ping",    do: Ping.ping(conn))
   get("/flunk",   do: Ping.flunk(conn))
+  get("/metrics", do: PrometheusExporter.metrics())
 
   forward("/api", to: Derivco.ApiRouter)
 
