@@ -6,11 +6,10 @@ defmodule Derivco.ApiRouter do
 
   # Use plug logger for logging request information
   plug(Plug.Logger)
-  plug(PlugEtsCache.Plug)
   plug(:match)
   plug(:dispatch)
 
-  get("/laliga",    do: LaLiga.run(conn))
+  get("/laliga", do: LaLiga.run(conn))
 
   match _ do
     send_resp(conn, 404, "oops")
