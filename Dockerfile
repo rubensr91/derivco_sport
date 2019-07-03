@@ -16,8 +16,8 @@ RUN set -xe \
 	&& make install clean \
 	&& git clone https://github.com/rubensr91/derivco_sport.git \
 	&& cd derivco_sport \
+	&& mix local.hex --force \
 	&& mix deps.get \
-	&& mix local.hex \
 	&& mix compile \
 	&& cd	
 
