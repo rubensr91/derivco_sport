@@ -18,7 +18,7 @@ defmodule Derivco.Mixfile do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      extra_applications: [:logger, :plug_cowboy],
+      extra_applications: [:logger, :plug_cowboy, :plug_ets_cache],
       mod: {Derivco, []}
     ]
   end
@@ -40,6 +40,7 @@ defmodule Derivco.Mixfile do
       {:prometheus_plugs, "~> 1.1.5"},
       {:nimble_csv, "~> 0.6"},
       {:mix_test_watch,   "~> 0.8", only: [:dev, :test], runtime: false},
+      {:plug_ets_cache, github: "andreapavoni/plug_ets_cache"},
       {:jason, "~> 1.1.2"},
       # {:credo, "~> 0.4", only: [:dev, :test]},
       {:excoveralls, "~> 0.8", only: :test},
