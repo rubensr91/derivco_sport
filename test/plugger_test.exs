@@ -1,4 +1,4 @@
-alias Derivco.Web.Router
+alias Derivco.Router
 
 defmodule DerivcoTest do
   @moduledoc false

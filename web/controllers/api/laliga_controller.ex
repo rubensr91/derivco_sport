@@ -1,11 +1,10 @@
-defmodule DerivcoSportWeb.Api.LaLigaController do
+defmodule Derivco.Api.LaLigaController do
   @moduledoc """
 
   """
   import Plug.Conn
   require Logger
   alias NimbleCSV.RFC4180, as: CSV
-
 
   @csv "data.csv"
 
@@ -25,10 +24,10 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
   end
 
   @spec run(Plug.Conn.t(), any) :: Plug.Conn.t()
-  def run(conn, params \\ []) do
+  def run(conn, _params \\ []) do
     @csv
     |> read_file()
-    |> filter_or_not_by_params(params)
+    |> filter_or_not_by_params(conn.query_string)
     |> encode_file()
     |> response(conn)
   end
@@ -75,9 +74,9 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
   end
 
   # @spec filter_or_not_by_params
-  defp filter_or_not_by_params({:ok, file}, params)
-       when is_map(params) and map_size(params) > 0 do
-    {:ok, Enum.filter(file, &(&1.season == params["season"]))}
+  defp filter_or_not_by_params({:ok, file}, param)
+       when is_binary(param) and byte_size(param) > 0 do
+    {:ok, Enum.filter(file, &(&1.season == param))}
   end
 
   defp filter_or_not_by_params({:ok, file}, _params) do

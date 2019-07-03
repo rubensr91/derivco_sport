@@ -1,4 +1,4 @@
-defmodule DerivcoSportWeb.Metrics do
+defmodule Derivco.Metrics do
   use Prometheus.Metric
 
   alias Prometheus.InvalidMetricArityError

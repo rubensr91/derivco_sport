@@ -1,4 +1,4 @@
-defmodule DerivcoSport.Mixfile do
+defmodule Derivco.Mixfile do
   use Mix.Project
 
   def project do
@@ -24,8 +24,8 @@ defmodule DerivcoSport.Mixfile do
   end
 
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_), do: ["lib"]
+  defp elixirc_paths(:test), do: ["lib", "web", "test/support"]
+  defp elixirc_paths(_), do: ["lib", "web"]
 
   # Specifies your project dependencies.
   #
@@ -39,6 +39,7 @@ defmodule DerivcoSport.Mixfile do
       {:prometheus_ex, "~> 3.0"},
       {:prometheus_plugs, "~> 1.1.5"},
       {:nimble_csv, "~> 0.6"},
+      {:mix_test_watch,   "~> 0.8", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.1.2"},
       # {:credo, "~> 0.4", only: [:dev, :test]},
       {:excoveralls, "~> 0.8", only: :test},

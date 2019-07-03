@@ -5,12 +5,12 @@ defmodule Derivco do
   use Application
 
   alias Plug.Cowboy
-  alias DerivcoSport.Router
+  alias Derivco.{Metrics, PipelineInstrumenter, PrometheusExporter, Router}
 
   def start(_type, _args) do
-    # Metrics.setup()
-    # PipelineInstrumenter.setup()
-    # PrometheusExporter.setup()
+    Metrics.setup()
+    PipelineInstrumenter.setup()
+    PrometheusExporter.setup()
 
     children = [
       Cowboy.child_spec(
@@ -20,7 +20,7 @@ defmodule Derivco do
       )
     ]
 
-    opts = [strategy: :one_for_one, name: DerivcoSport.Supervisor]
+    opts = [strategy: :one_for_one, name: Derivco.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end

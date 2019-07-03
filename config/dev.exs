@@ -1,5 +1,7 @@
 use Mix.Config
 
+config :derivco_sport, port: 4001
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #

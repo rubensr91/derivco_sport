@@ -1,6 +1,6 @@
-defmodule DerivcoSportWeb.PipelineInstrumenter do
+defmodule Derivco.PipelineInstrumenter do
   @moduledoc """
-  Prometheus Plug Pipeline Instrumenter for DerivcoSport
+  Prometheus Plug Pipeline Instrumenter for Derivco
   """
   use Prometheus.PlugPipelineInstrumenter
 
