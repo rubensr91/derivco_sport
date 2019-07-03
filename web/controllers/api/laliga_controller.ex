@@ -2,9 +2,10 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
   @moduledoc """
 
   """
+  import Plug.Conn
   require Logger
-  use DerivcoSportWeb, :controller
   alias NimbleCSV.RFC4180, as: CSV
+
 
   @csv "data.csv"
 
@@ -23,8 +24,8 @@ defmodule DerivcoSportWeb.Api.LaLigaController do
     defstruct ~w(state reason)a
   end
 
-  @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
-  def index(conn, params \\ []) do
+  @spec run(Plug.Conn.t(), any) :: Plug.Conn.t()
+  def run(conn, params \\ []) do
     @csv
     |> read_file()
     |> filter_or_not_by_params(params)
