@@ -35,12 +35,11 @@ defmodule Derivco.Mixfile do
 
       {:httpoison, "~> 1.4"},
       {:plug_cowboy,      "~> 2.0"},
-      {:plug,             "~> 1.0"},
+      {:plug,             "~> 1.3"},
       {:prometheus_ex, "~> 3.0"},
       {:prometheus_plugs, "~> 1.1.5"},
       {:nimble_csv, "~> 0.6"},
       {:mix_test_watch,   "~> 0.8", only: [:dev, :test], runtime: false},
-      {:plug_ets_cache, github: "andreapavoni/plug_ets_cache"},
       {:jason, "~> 1.1.2"},
       # {:credo, "~> 0.4", only: [:dev, :test]},
       {:excoveralls, "~> 0.8", only: :test},

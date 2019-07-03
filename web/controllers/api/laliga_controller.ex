@@ -1,9 +1,6 @@
 defmodule Derivco.Api.LaLigaController do
   @moduledoc """
-  Main controller
-  Is called from X.X.X.X/api/laliga
-  HTML API to provide games result
-  Can recieve params to filter the result
+
   """
   import Plug.Conn
   require Logger
