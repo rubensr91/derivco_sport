@@ -1,5 +1,6 @@
 defmodule Derivco do
   @moduledoc """
+  Start application and setup metrics
   """
 
   use Application

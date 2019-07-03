@@ -1,15 +1,16 @@
 defmodule Derivco.ApiRouter do
-
+  @moduledoc """
+  Api router
+  Just call to LaLigaController
+  """
   use Plug.Router
 
-  alias Derivco.Api.LaLigaController, as: LaLiga
+  alias Derivco.Api.LaLigaController, as: LaLigaController
 
-  # Use plug logger for logging request information
-  plug(Plug.Logger)
   plug(:match)
   plug(:dispatch)
 
-  get("/laliga", do: LaLiga.run(conn))
+  get("/laliga", do: LaLigaController.run(conn))
 
   match _ do
     send_resp(conn, 404, "oops")

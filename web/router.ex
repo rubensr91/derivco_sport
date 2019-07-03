@@ -1,11 +1,11 @@
 defmodule Derivco.Router do
-  
+  @moduledoc """
+  Main router of application
+  Offer a ping to see is everything is running ok
+  """  
   use Plug.Router
   
   alias Derivco.PingController, as: Ping
-
-  # Use plug logger for logging request information
-  plug(Plug.Logger)
 
   plug(:match)
   plug(Derivco.PipelineInstrumenter)
