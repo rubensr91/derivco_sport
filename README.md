@@ -16,8 +16,10 @@
  * http://localhost:4001/api/laliga
  * To see filter results
  * http://localhost:4001/api/laliga?season=201617
- * To see metrics of the aplication and git commit version
+ * To see metrics of the aplication 
  * http://localhost:4001/metrics
+ * To see version github
+ * http://localhost:4001/version
 
 ## DIALYZER
  * mix do deps.get, deps.compile, dialyzer --plt

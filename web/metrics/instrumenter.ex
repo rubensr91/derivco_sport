@@ -1,4 +1,4 @@
-defmodule Derivco.PipelineInstrumenter do
+defmodule Derivco.Metrics.Instrumenter do
   @moduledoc """
   Prometheus Plug Pipeline Instrumenter for Derivco
   """

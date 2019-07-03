@@ -6,16 +6,17 @@ defmodule Derivco do
   use Application
 
   alias Plug.Cowboy
-  alias Derivco.{Metrics, PipelineInstrumenter, PrometheusExporter, Router}
+  alias Derivco.VersionController
+  alias Derivco.Metrics
+  alias Derivco.Web.Router
+  alias Derivco.Metrics.{Exporter, Instrumenter}
 
   def start(_type, _args) do
     Metrics.setup()
-    PipelineInstrumenter.setup()
-    PrometheusExporter.setup()
+    Exporter.setup()
+    Instrumenter.setup()
 
-    commit = :os.cmd('git rev-parse --short HEAD') |> to_string |> String.trim_trailing("\n")
-    v = "0.1.0+#{commit}"
-    Metrics.inc(:git_version, [labels: [v]])
+    Metrics.inc(:version, labels: [VersionController.get_commit_version()])
 
     children = [
       Cowboy.child_spec(

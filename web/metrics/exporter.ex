@@ -1,4 +1,4 @@
-defmodule Derivco.PrometheusExporter do
+defmodule Derivco.Metrics.Exporter do
   @moduledoc """
   The Prometheus Plug Exporter for Bidtor
   """

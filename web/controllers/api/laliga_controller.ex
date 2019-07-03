@@ -1,10 +1,12 @@
 defmodule Derivco.Api.LaLigaController do
   @moduledoc """
-
+  Main controller
+  Return a json with games result if everything is ok
+  or an error if anything fail
   """
   import Plug.Conn
   require Logger
-  
+
   alias LaLigaLogic
 
   @csv "data.csv"
