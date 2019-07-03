@@ -1,5 +1,4 @@
 defmodule DerivcoSportWeb.Metrics do
-
   use Prometheus.Metric
 
   alias Prometheus.InvalidMetricArityError
@@ -8,7 +7,7 @@ defmodule DerivcoSportWeb.Metrics do
   alias Prometheus.UnknownMetricError
 
   @type prometheus_error ::
-  {:error, :invalid_metric_arity | :invalid_value | :unknown_metric }
+          {:error, :invalid_metric_arity | :invalid_value | :unknown_metric}
 
   @type result :: {:ok, integer} | prometheus_error
 
@@ -21,7 +20,6 @@ defmodule DerivcoSportWeb.Metrics do
 
   @spec setup(any) :: {:ok, :ready}
   def setup(_args) do
-
     Counter.declare(
       name: :git_version,
       help: "git",
@@ -33,14 +31,14 @@ defmodule DerivcoSportWeb.Metrics do
 
   @spec add(atom, integer, keyword) :: result
   def add(key, quantity, opts \\ [labels: []]) do
-    with :ok <-  do_add(key, quantity, opts[:labels]) do
+    with :ok <- do_add(key, quantity, opts[:labels]) do
       do_get(key, opts[:labels])
     end
   end
 
   @spec inc(atom, keyword) :: result
   def inc(key, opts \\ [labels: []]), do: add(key, 1, opts)
-  
+
   @spec reset(atom, keyword) :: result
   def reset(key, opts \\ [labels: []]), do: do_reset(key, opts[:labels])
 
@@ -62,31 +60,30 @@ defmodule DerivcoSportWeb.Metrics do
     Counter.inc([name: key, labels: labels], quantity)
     :ok
   rescue
-    InvalidValueError        ->  {:error, :invalid_value}
-    UnknownMetricError       ->  {:error, :unknown_metric}
-    InvalidMetricArityError  ->  {:error, :invalid_metric_arity}
+    InvalidValueError -> {:error, :invalid_value}
+    UnknownMetricError -> {:error, :unknown_metric}
+    InvalidMetricArityError -> {:error, :invalid_metric_arity}
   end
 
   @spec do_get(atom, keyword) ::
-    {:ok, integer} | {:error, :unknown_metric | :invalid_metric_arity}
+          {:ok, integer} | {:error, :unknown_metric | :invalid_metric_arity}
   defp do_get(key, labels) do
     case Counter.value(name: key, labels: labels) do
-      :undefined  -> {:ok, 0}
-      val         -> {:ok, val}
+      :undefined -> {:ok, 0}
+      val -> {:ok, val}
     end
   rescue
-    UnknownMetricError       ->  {:error, :unknown_metric}
-    InvalidMetricArityError  ->  {:error, :invalid_metric_arity}
+    UnknownMetricError -> {:error, :unknown_metric}
+    InvalidMetricArityError -> {:error, :invalid_metric_arity}
   end
 
   @spec do_reset(atom, keyword) ::
-    {:ok, 0} | {:error, :unknown_metric | :invalid_metric_arity}
+          {:ok, 0} | {:error, :unknown_metric | :invalid_metric_arity}
   defp do_reset(key, labels) do
     Counter.reset(name: key, labels: labels)
     {:ok, 0}
   rescue
-    UnknownMetricError       ->  {:error, :unknown_metric}
-    InvalidMetricArityError  ->  {:error, :invalid_metric_arity}
+    UnknownMetricError -> {:error, :unknown_metric}
+    InvalidMetricArityError -> {:error, :invalid_metric_arity}
   end
-
 end

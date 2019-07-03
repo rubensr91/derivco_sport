@@ -14,14 +14,14 @@ defmodule DerivcoSport.Application do
 
     commit = :os.cmd('git rev-parse --short HEAD') |> to_string |> String.trim_trailing("\n")
     version = "0.1.0+#{commit}"
-    DerivcoSportWeb.Metrics.inc(:git_version, [labels: [version]])
+    DerivcoSportWeb.Metrics.inc(:git_version, labels: [version])
 
     # Define workers and child supervisors to be supervised
     children = [
       # Start the Ecto repository
       supervisor(DerivcoSport.Repo, []),
       # Start the endpoint when the application starts
-      supervisor(DerivcoSportWeb.Endpoint, []),
+      supervisor(DerivcoSportWeb.Endpoint, [])
       # Start your own worker by calling: DerivcoSport.Worker.start_link(arg1, arg2, arg3)
       # worker(DerivcoSport.Worker, [arg1, arg2, arg3]),
     ]
