@@ -21,6 +21,5 @@ RUN set -xe \
 	&& mix local.rebar --force \
 	&& mix deps.get \
 	&& mix compile \
-	&& cd	
-
+	&& iex -S mix	
 CMD ["iex"]

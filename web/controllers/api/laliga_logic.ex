@@ -1,4 +1,4 @@
-defmodule LaLigaLogic do
+defmodule Derivco.Api.LaLigaLogic do
   @moduledoc """
   Logic of LaLigaController
   Read the csv file and make a map,
@@ -9,7 +9,14 @@ defmodule LaLigaLogic do
   require Logger
   alias NimbleCSV.RFC4180, as: CSV
 
-  @spec run(String.t(), String.t()) :: Jason | Tuple
+  @spec run(
+          <<_::144>>,
+          binary()
+          | maybe_improper_list(
+              binary() | maybe_improper_list(any(), binary() | []) | char(),
+              binary() | []
+            )
+        ) :: {:error, <<_::144>>} | {:ok, binary()}
 
   def run(params, file) do
     file
@@ -18,7 +25,13 @@ defmodule LaLigaLogic do
     |> encode_file()
   end
 
-  @spec read_file(String.t()) :: List | Tuple
+  @spec read_file(
+          binary()
+          | maybe_improper_list(
+              binary() | maybe_improper_list(any(), binary() | []) | char(),
+              binary() | []
+            )
+        ) :: {:error, <<_::144>>} | {:ok, [any()]}
 
   defp read_file(file) do
     case File.read(file) do
@@ -60,7 +73,8 @@ defmodule LaLigaLogic do
     end
   end
 
-  @spec filter_or_not_by_params(Tuple, String.t()) :: Tuple
+  @spec filter_or_not_by_params({:error, <<_::144>>} | {:ok, [any()]}, <<_::144>>) ::
+          {:error, <<_::144>>} | {:ok, [any()]}
 
   defp filter_or_not_by_params({:ok, file}, param)
        when is_binary(param) and byte_size(param) > 0 do
@@ -70,7 +84,8 @@ defmodule LaLigaLogic do
   defp filter_or_not_by_params({:ok, file}, _params), do: {:ok, file}
   defp filter_or_not_by_params({:error, _reason} = error, _params), do: error
 
-  @spec encode_file(Tuple) :: Tuple
+  @spec encode_file({:error, <<_::144>>} | {:ok, [any()]}) ::
+          {:error, <<_::144>>} | {:ok, binary()}
 
   defp encode_file({:ok, file}) do
     {:ok,

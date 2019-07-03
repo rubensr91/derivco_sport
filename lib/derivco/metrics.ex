@@ -39,18 +39,6 @@ defmodule Derivco.Metrics do
   @spec inc(atom, keyword) :: result
   def inc(key, opts \\ [labels: []]), do: add(key, 1, opts)
 
-  @spec reset(atom, keyword) :: result
-  def reset(key, opts \\ [labels: []]), do: do_reset(key, opts[:labels])
-
-  @spec get(atom, keyword) :: result
-  def get(key, opts \\ [labels: []]), do: do_get(key, opts[:labels])
-
-  def gauge_inc(spec, value \\ 1), do: Gauge.inc(spec, value)
-
-  def gauge_dec(spec, value \\ 1), do: Gauge.dec(spec, value)
-
-  def histogram_observe(spec, value), do: Histogram.observe(spec, value)
-
   #################
   # Aux Functions #
   #################
@@ -72,16 +60,6 @@ defmodule Derivco.Metrics do
       :undefined -> {:ok, 0}
       val -> {:ok, val}
     end
-  rescue
-    UnknownMetricError -> {:error, :unknown_metric}
-    InvalidMetricArityError -> {:error, :invalid_metric_arity}
-  end
-
-  @spec do_reset(atom, keyword) ::
-          {:ok, 0} | {:error, :unknown_metric | :invalid_metric_arity}
-  defp do_reset(key, labels) do
-    Counter.reset(name: key, labels: labels)
-    {:ok, 0}
   rescue
     UnknownMetricError -> {:error, :unknown_metric}
     InvalidMetricArityError -> {:error, :invalid_metric_arity}

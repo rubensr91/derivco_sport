@@ -7,7 +7,7 @@ defmodule Derivco.Api.LaLigaController do
   import Plug.Conn
   require Logger
 
-  alias LaLigaLogic
+  alias Derivco.Api.LaLigaLogic
 
   @csv "data.csv"
 
