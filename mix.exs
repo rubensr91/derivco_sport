@@ -18,7 +18,7 @@ defmodule Derivco.Mixfile do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      extra_applications: [:logger, :plug_cowboy, :plug_ets_cache],
+      extra_applications: [:logger, :plug_cowboy],
       mod: {Derivco, []}
     ]
   end
