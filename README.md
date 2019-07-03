@@ -20,6 +20,7 @@
  * http://localhost:4001/metrics
  * To see version github
  * http://localhost:4001/version
+ * Run mix run --no-halt and next go to http://127.0.0.1:8080/ to see web machine working
 
 ## DIALYZER
  * mix do deps.get, deps.compile, dialyzer --plt

@@ -12,11 +12,30 @@ defmodule Derivco do
   alias Derivco.Metrics.{Exporter, Instrumenter}
 
   def start(_type, _args) do
+    import Supervisor.Spec, warn: false
+
     Metrics.setup()
     Exporter.setup()
     Instrumenter.setup()
 
     Metrics.inc(:version, labels: [VersionController.get_commit_version()])
+
+    # webmachine config
+    web_config = [
+      ip: {127, 0, 0, 1},
+      port: 8080,
+      dispatch: [
+        {[], Derivco.PingController, []}
+      ]
+    ]
+
+    # webmachine children
+    web_machine_children = [
+      worker(:webmachine_mochiweb, [web_config],
+        function: :start,
+        modules: [:mochiweb_socket_server]
+      )
+    ]
 
     children = [
       Cowboy.child_spec(
@@ -27,6 +46,6 @@ defmodule Derivco do
     ]
 
     opts = [strategy: :one_for_one, name: Derivco.Supervisor]
-    Supervisor.start_link(children, opts)
+    Supervisor.start_link(children ++ web_machine_children, opts)
   end
 end

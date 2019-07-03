@@ -5,6 +5,10 @@ defmodule Derivco.PingController do
   """
   import Plug.Conn
 
+  def init(_) do
+    {:ok, nil}
+  end
+
   @spec ping(%Plug.Conn{}) :: %Plug.Conn{}
 
   def ping(conn) do
@@ -19,5 +23,12 @@ defmodule Derivco.PingController do
     conn
     |> put_resp_header("content-type", "text/plain")
     |> send_resp(500, "Booom!!")
+  end
+
+  def to_html(req_data, state) do
+    commit = :os.cmd('git rev-parse --short HEAD') |> to_string |> String.trim_trailing("\n")
+
+    {"<html><body>I show you the version of this project with web machine => " <>
+       "0.1.0+#{commit}" <> "</body></html>", req_data, state}
   end
 end
