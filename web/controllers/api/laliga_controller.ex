@@ -17,12 +17,12 @@ defmodule Derivco.Api.LaLigaController do
   end
 
   @spec response(Tuple, Plug.Conn.t()) :: Plug.Conn.t()
-  defp response({:ok, data}, conn) do
+  def response({:ok, data}, conn) do
     conn
     |> put_resp_content_type("application/json")
     |> send_resp(200, data)
   end
-  defp response({:error, reason}, conn) do
+  def response({:error, reason}, conn) do
     Logger.error(reason)
 
     conn

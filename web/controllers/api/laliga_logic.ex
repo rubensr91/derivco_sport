@@ -20,7 +20,7 @@ defmodule Derivco.Api.LaLigaLogic do
 
   @spec run(binary() | []) :: {:error, <<_::144>>} | {:ok, binary()}
 
-  def run(params) do
+  def run(params \\ nil) do
     filter_or_not_by_params(@data, params)
     |> encode_file()
   end
@@ -28,20 +28,21 @@ defmodule Derivco.Api.LaLigaLogic do
   @spec filter_or_not_by_params({:error, <<_::144>>} | {:ok, [any()]}, <<_::144>>) ::
           {:error, <<_::144>>} | {:ok, [any()]}
 
-  defp filter_or_not_by_params(file, param)
+  def filter_or_not_by_params({:error, _reason} = error, _params), do: error
+  def filter_or_not_by_params(file, param)
        when is_binary(param) and byte_size(param) > 0 do
     {:ok, Enum.filter(file, &(&1.season == param))}
   end
-  defp filter_or_not_by_params(file, _params), do: {:ok, file}
-  defp filter_or_not_by_params({:error, _reason} = error, _params), do: error
+  def filter_or_not_by_params(file, _params), do: {:ok, file}
+  
 
   @spec encode_file({:error, <<_::144>>} | {:ok, [any()]}) ::
           {:error, <<_::144>>} | {:ok, binary()}
 
-  defp encode_file({:ok, file}) do
+  def encode_file({:ok, file}) do
     {:ok,
      file
      |> Jason.encode!()}
   end
-  defp encode_file({:error, _reason} = error), do: error
+  def encode_file({:error, _reason} = error), do: error
 end
