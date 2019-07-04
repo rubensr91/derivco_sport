@@ -9,24 +9,19 @@ defmodule Derivco.Api.LaLigaController do
 
   alias Derivco.Api.LaLigaLogic
 
-  @csv "data.csv"
-
   @spec run(Plug.Conn.t(), any) :: Plug.Conn.t()
   def run(conn, _params \\ []) do
     conn.query_string
-    |> LaLigaLogic.run(@csv)
+    |> LaLigaLogic.run()
     |> response(conn)
   end
 
-  # @spec response
+  @spec response(Tuple, Plug.Conn.t()) :: Plug.Conn.t()
   defp response({:ok, data}, conn) do
-    Logger.info("Read file correctly!")
-
     conn
     |> put_resp_content_type("application/json")
     |> send_resp(200, data)
   end
-
   defp response({:error, reason}, conn) do
     Logger.error(reason)
 

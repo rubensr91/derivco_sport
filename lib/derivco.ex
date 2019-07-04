@@ -14,6 +14,8 @@ defmodule Derivco do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
+    :ets.new(:laliga, [:public, :named_table])
+
     Metrics.setup()
     Exporter.setup()
     Instrumenter.setup()
