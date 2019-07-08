@@ -11,7 +11,7 @@ defmodule Derivco.Api.LaLigaController do
 
   @spec run(Plug.Conn.t(), any) :: Plug.Conn.t()
   def run(conn, _params \\ []) do
-    conn.query_string
+    conn
     |> LaLigaLogic.run()
     |> response(conn)
   end

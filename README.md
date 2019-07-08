@@ -14,8 +14,8 @@
  * http://localhost:4001/ping 
  * To see all games results
  * http://localhost:4001/api/laliga
- * To see filter results
- * http://localhost:4001/api/laliga?season=201617
+ * To see filter results by season and/or division
+ * http://localhost:4001/api/laliga?season=201617&div=SP1
  * To see metrics of the aplication 
  * http://localhost:4001/metrics
  * To see version github

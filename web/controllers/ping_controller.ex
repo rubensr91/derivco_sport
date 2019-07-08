@@ -4,7 +4,6 @@ defmodule Derivco.PingController do
   for verify if derivco is up (ping) or to force an error (flunk).
   """
   import Plug.Conn
-  alias Derivco.Api.LaLigaLogic
 
   def init(_) do
     {:ok, nil}
@@ -27,9 +26,6 @@ defmodule Derivco.PingController do
   end
 
   def to_html(req_data, state) do
-
-    LaLigaLogic.run("")
-    
     commit = :os.cmd('git rev-parse --short HEAD') |> to_string |> String.trim_trailing("\n")
 
     {"<html><body>I show you the version of this project with web machine => " <>
