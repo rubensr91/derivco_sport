@@ -21,6 +21,8 @@ defmodule Derivco.Api.LaLigaLogic do
   @spec run(%Plug.Conn{} | []) :: {:error, <<_::144>>} | {:ok, binary()}
 
   def run(conn) do
+    Logger.info("Running application")
+
     filter_or_not_by_season(@data, conn.query_params["season"])
     |> filter_or_not_by_div(conn.query_params["div"])
     |> encode_file()
@@ -32,9 +34,15 @@ defmodule Derivco.Api.LaLigaLogic do
   def filter_or_not_by_season({:error, _reason} = error, _params), do: error
   def filter_or_not_by_season(file, season)
        when is_binary(season) and byte_size(season) > 0 do
+    Logger.info("Filtering by season => #{inspect season}")
+
     {:ok, Enum.filter(file, &(&1.season == season))}
   end
-  def filter_or_not_by_season(file, _params), do: {:ok, file}
+  def filter_or_not_by_season(file, _params) do 
+    Logger.info("No season filter found")
+
+    {:ok, file}
+  end
 
   @spec filter_or_not_by_div({:error, <<_::144>>} | {:ok, [any()]}, <<_::144>>) ::
           {:error, <<_::144>>} | {:ok, [any()]}
@@ -42,17 +50,28 @@ defmodule Derivco.Api.LaLigaLogic do
   def filter_or_not_by_div({:error, _reason} = error, _params), do: error
   def filter_or_not_by_div({:ok, file}, div)
        when is_binary(div) and byte_size(div) > 0 do
+    Logger.info("Filtering by division => #{inspect div}")
+
     {:ok, Enum.filter(file, &(&1.div == div))}
   end
-  def filter_or_not_by_div({:ok, file}, _params), do: {:ok, file}    
+  def filter_or_not_by_div({:ok, file}, _params) do 
+    Logger.info("No division filter found")
+
+    {:ok, file}    
+  end
   
   @spec encode_file({:error, <<_::144>>} | {:ok, [any()]}) ::
           {:error, <<_::144>>} | {:ok, binary()}
 
   def encode_file({:ok, file}) do
+    Logger.info("Encondig responde")
+
     {:ok,
      file
      |> Jason.encode!()}
   end
-  def encode_file({:error, _reason} = error), do: error
+  def encode_file({:error, _reason} = error) do
+    Logger.error("Error encoding file #{inspect error}")
+    error
+  end
 end

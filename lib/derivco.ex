@@ -4,7 +4,7 @@ defmodule Derivco do
   """
 
   use Application
-
+  require Logger
   alias Plug.Cowboy
   alias Derivco.VersionController
   alias Derivco.Metrics
@@ -13,6 +13,8 @@ defmodule Derivco do
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
+
+    Logger.info("Starting application!")
 
     Metrics.setup()
     Exporter.setup()
