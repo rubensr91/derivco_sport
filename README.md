@@ -29,4 +29,4 @@
  * sudo docker build --tag=rubensr91/laliga .
 
 ## DOCKER COMPOSE
- * run sudo sudo docker-compose up
+ * run sudo docker-compose up
