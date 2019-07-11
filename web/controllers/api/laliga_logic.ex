@@ -4,9 +4,9 @@ defmodule Derivco.Api.LaLigaLogic do
   With this you read the file just when you compile the app
   I know is not the best way because you have to recompile if you change the file
   Logic of LaLigaController
-  Read the csv file and make a map,
-  if ok return a map else return a tuple
-  then, if params is not empty, filter the result and return
+  First load data from csv file and make a map
+  Then validate if params
+  if ok return a map with filters data else return an error
   """
 
   require Logger
@@ -14,8 +14,8 @@ defmodule Derivco.Api.LaLigaLogic do
 
   @data "data.csv" |> File.read! |> CSV.parse_string()
          |> Enum.map(fn [_coma,div,season,date,hometeam,awayteam,fthg,ftag,ftr,hthg,htag,htr] -> 
-          %{div: div,season: season,date: date,hometeam: hometeam,awayteam: awayteam,fthg: fthg,ftag: ftag,
-             ftr: ftr,hthg: hthg,htag: htag,htr: htr}
+          %{div: div, season: season, date: date, hometeam: hometeam, awayteam: awayteam, fthg: fthg, ftag: ftag,
+             ftr: ftr, hthg: hthg, htag: htag, htr: htr}
          end)
 
   @spec run(%Plug.Conn{} | []) :: Tuple
@@ -28,7 +28,8 @@ defmodule Derivco.Api.LaLigaLogic do
     |> encode_file()
   end
 
-   @spec validate_params(String.t(), Map) :: Tuple
+  @spec validate_params(String.t(), Map) :: Tuple
+
   def validate_params(data, params) do
     case is_map(params) and map_size(params) > 0 do
       true -> {:ok, data, params}
@@ -37,6 +38,7 @@ defmodule Derivco.Api.LaLigaLogic do
   end
 
   @spec filter(Tuple) :: Tuple
+  
   def filter({:ok, data, params}) do
     filter_or_not_by_season(data, params["season"])
     |> filter_or_not_by_div(params["div"])
