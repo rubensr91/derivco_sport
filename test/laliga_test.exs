@@ -3,7 +3,7 @@ defmodule LaLigaTest do
   use ExUnit.Case
   use Plug.Test
 
-  alias Derivco.Api.{LaLigaLogic, LaLigaController}
+  alias Derivco.Api.{LaLigaController, LaLigaLogic}
 
   test "testing laliga with bad params" do
     conn = conn(:get, "/api/laliga?season=asd&div=3123")

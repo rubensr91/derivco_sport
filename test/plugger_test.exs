@@ -3,8 +3,8 @@ defmodule DerivcoTest do
   use ExUnit.Case
   use Plug.Test
 
-  alias Derivco.Web.Router
   alias Derivco.PingController
+  alias Derivco.Web.Router
 
   @opts Router.init([])
 

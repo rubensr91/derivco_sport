@@ -1,4 +1,7 @@
 defmodule Derivco.Metrics do
+  @moduledoc """
+  Prometheus and own metrics
+  """
   use Prometheus.Metric
 
   alias Prometheus.InvalidMetricArityError

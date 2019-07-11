@@ -41,7 +41,8 @@ defmodule Derivco.Mixfile do
       {:mix_test_watch, "~> 0.8", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.1.2"},
       {:excoveralls, "~> 0.8", only: :test},
-      {:webmachine, git: "https://github.com/webmachine/webmachine.git", branch: "master"}
+      {:webmachine, git: "https://github.com/webmachine/webmachine.git", branch: "master"},
+      {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false}
     ]
   end
 end

@@ -11,13 +11,13 @@ defmodule Derivco.ApiRouter do
   plug(:match)
   plug(:dispatch)
 
-  get "/laliga" do 
+  get "/laliga" do
     conn = Plug.Conn.fetch_query_params(conn)
     LaLigaController.run(conn)
   end
-  
+
   match _ do
     send_resp(conn, 404, "oops")
-  end  
+  end
 
 end

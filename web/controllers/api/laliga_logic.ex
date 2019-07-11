@@ -15,33 +15,11 @@ defmodule Derivco.Api.LaLigaLogic do
   @data "data.csv"
         |> File.read!()
         |> CSV.parse_string()
-        |> Enum.map(fn [
-                         _coma,
-                         div,
-                         season,
-                         date,
-                         hometeam,
-                         awayteam,
-                         fthg,
-                         ftag,
-                         ftr,
-                         hthg,
-                         htag,
-                         htr
-                       ] ->
-          %{
-            div: div,
-            season: season,
-            date: date,
-            hometeam: hometeam,
-            awayteam: awayteam,
-            fthg: fthg,
-            ftag: ftag,
-            ftr: ftr,
-            hthg: hthg,
-            htag: htag,
-            htr: htr
-          }
+        |> Enum.map(fn [_coma, div, season, date, hometeam, awayteam,
+          fthg, ftag, ftr, hthg, htag, htr] ->
+          %{div: div, season: season, date: date, hometeam: hometeam,
+            awayteam: awayteam, fthg: fthg, ftag: ftag, ftr: ftr,
+            hthg: hthg, htag: htag, htr: htr}
         end)
 
   @spec run(%Plug.Conn{} | []) :: Tuple
@@ -49,7 +27,8 @@ defmodule Derivco.Api.LaLigaLogic do
   def run(conn) do
     Logger.info("Running application")
 
-    validate_params(@data, conn.query_params)
+    @data
+    |> validate_params(conn.query_params)
     |> filter()
     |> encode_file()
   end
@@ -66,7 +45,8 @@ defmodule Derivco.Api.LaLigaLogic do
   @spec filter(Tuple) :: Tuple
 
   def filter({:ok, data, params}) do
-    filter_or_not_by_season(data, params["season"])
+    data
+    |> filter_or_not_by_season(params["season"])
     |> filter_or_not_by_div(params["div"])
   end
 

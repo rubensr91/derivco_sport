@@ -5,11 +5,11 @@ defmodule Derivco do
 
   use Application
   require Logger
-  alias Plug.Cowboy
-  alias Derivco.VersionController
   alias Derivco.Metrics
-  alias Derivco.Web.Router
   alias Derivco.Metrics.{Exporter, Instrumenter}
+  alias Derivco.VersionController
+  alias Derivco.Web.Router
+  alias Plug.Cowboy
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false

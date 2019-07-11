@@ -12,7 +12,7 @@ defmodule Derivco.VersionController do
   end
 
   @spec get_commit_version() :: String.t
-  def get_commit_version() do
+  def get_commit_version do
     commit = :os.cmd('git rev-parse --short HEAD') |> to_string |> String.trim_trailing("\n")
     "0.1.0+#{commit}"
   end
