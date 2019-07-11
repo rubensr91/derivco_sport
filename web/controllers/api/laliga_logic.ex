@@ -18,18 +18,35 @@ defmodule Derivco.Api.LaLigaLogic do
              ftr: ftr,hthg: hthg,htag: htag,htr: htr}
          end)
 
-  @spec run(%Plug.Conn{} | []) :: {:error, <<_::144>>} | {:ok, binary()}
+  @spec run(%Plug.Conn{} | []) :: Tuple
 
   def run(conn) do
     Logger.info("Running application")
 
-    filter_or_not_by_season(@data, conn.query_params["season"])
-    |> filter_or_not_by_div(conn.query_params["div"])
+    validate_params(@data, conn.query_params)
+    |> filter()
     |> encode_file()
   end
 
-  @spec filter_or_not_by_season({:error, <<_::144>>} | any(), <<_::144>>) ::
-          {:error, <<_::144>>} | {:ok, [any()]}
+   @spec validate_params(String.t(), Map) :: Tuple
+  def validate_params(data, params) do
+    case is_map(params) and map_size(params) > 0 do
+      true -> {:ok, data, params}
+      false -> {:ko, "No filters found"}
+    end
+  end
+
+  @spec filter(Tuple) :: Tuple
+  def filter({:ok, data, params}) do
+    filter_or_not_by_season(data, params["season"])
+    |> filter_or_not_by_div(params["div"])
+  end
+  def filter({:ko, reason} = error) do
+    error
+    |> encode_file()
+  end    
+
+  @spec filter_or_not_by_season(Tuple | String.t(), String.t()) :: Tuple
 
   def filter_or_not_by_season({:error, _reason} = error, _params), do: error
   def filter_or_not_by_season(file, season)
@@ -38,14 +55,11 @@ defmodule Derivco.Api.LaLigaLogic do
 
     {:ok, Enum.filter(file, &(&1.season == season))}
   end
-  def filter_or_not_by_season(file, _params) do 
-    Logger.info("No season filter found")
-
+  def filter_or_not_by_season(file, _season) do
     {:ok, file}
   end
 
-  @spec filter_or_not_by_div({:error, <<_::144>>} | {:ok, [any()]}, <<_::144>>) ::
-          {:error, <<_::144>>} | {:ok, [any()]}
+  @spec filter_or_not_by_div(Tuple | String.t(), String.t()) :: Tuple
 
   def filter_or_not_by_div({:error, _reason} = error, _params), do: error
   def filter_or_not_by_div({:ok, file}, div)
@@ -54,24 +68,23 @@ defmodule Derivco.Api.LaLigaLogic do
 
     {:ok, Enum.filter(file, &(&1.div == div))}
   end
-  def filter_or_not_by_div({:ok, file}, _params) do 
-    Logger.info("No division filter found")
-
-    {:ok, file}    
-  end
+def filter_or_not_by_div({:ok, file}, _season) do
+    {:ok, file}
+  end  
   
-  @spec encode_file({:error, <<_::144>>} | {:ok, [any()]}) ::
-          {:error, <<_::144>>} | {:ok, binary()}
+  @spec encode_file(Tuple) :: Tuple
 
   def encode_file({:ok, file}) do
-    Logger.info("Encondig responde")
+    Logger.info("Encondig #{Enum.count(file)} results")
 
     {:ok,
      file
      |> Jason.encode!()}
   end
-  def encode_file({:error, _reason} = error) do
-    Logger.error("Error encoding file #{inspect error}")
+  def encode_file({:ko, reason} = error) do
+    {:ko, reason}
+  end  
+  def encode_file({:error, reason} = error) do
     error
   end
 end

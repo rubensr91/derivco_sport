@@ -18,12 +18,18 @@ defmodule Derivco.Api.LaLigaController do
 
   @spec response(Tuple, Plug.Conn.t()) :: Plug.Conn.t()
   def response({:ok, data}, conn) do
-    Logger.info("Return results!")
+    Logger.info("Returning results!")
 
     conn
     |> put_resp_content_type("application/json")
     |> send_resp(200, data)
   end
+  def response({:ko, reason}, conn) do
+    Logger.error("#{inspect reason}")
+
+    conn
+    |> send_resp(202, reason)
+  end  
   def response({:error, reason}, conn) do
     Logger.error("Error #{inspect reason}")
 
