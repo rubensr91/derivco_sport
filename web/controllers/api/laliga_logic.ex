@@ -12,11 +12,37 @@ defmodule Derivco.Api.LaLigaLogic do
   require Logger
   alias NimbleCSV.RFC4180, as: CSV
 
-  @data "data.csv" |> File.read! |> CSV.parse_string()
-         |> Enum.map(fn [_coma,div,season,date,hometeam,awayteam,fthg,ftag,ftr,hthg,htag,htr] -> 
-          %{div: div, season: season, date: date, hometeam: hometeam, awayteam: awayteam, fthg: fthg, ftag: ftag,
-             ftr: ftr, hthg: hthg, htag: htag, htr: htr}
-         end)
+  @data "data.csv"
+        |> File.read!()
+        |> CSV.parse_string()
+        |> Enum.map(fn [
+                         _coma,
+                         div,
+                         season,
+                         date,
+                         hometeam,
+                         awayteam,
+                         fthg,
+                         ftag,
+                         ftr,
+                         hthg,
+                         htag,
+                         htr
+                       ] ->
+          %{
+            div: div,
+            season: season,
+            date: date,
+            hometeam: hometeam,
+            awayteam: awayteam,
+            fthg: fthg,
+            ftag: ftag,
+            ftr: ftr,
+            hthg: hthg,
+            htag: htag,
+            htr: htr
+          }
+        end)
 
   @spec run(%Plug.Conn{} | []) :: Tuple
 
@@ -38,25 +64,28 @@ defmodule Derivco.Api.LaLigaLogic do
   end
 
   @spec filter(Tuple) :: Tuple
-  
+
   def filter({:ok, data, params}) do
     filter_or_not_by_season(data, params["season"])
     |> filter_or_not_by_div(params["div"])
   end
+
   def filter({:ko, reason} = error) do
     error
     |> encode_file()
-  end    
+  end
 
   @spec filter_or_not_by_season(Tuple | String.t(), String.t()) :: Tuple
 
   def filter_or_not_by_season({:error, _reason} = error, _params), do: error
+
   def filter_or_not_by_season(file, season)
-       when is_binary(season) and byte_size(season) > 0 do
-    Logger.info("Filtering by season => #{inspect season}")
+      when is_binary(season) and byte_size(season) > 0 do
+    Logger.info("Filtering by season => #{inspect(season)}")
 
     {:ok, Enum.filter(file, &(&1.season == season))}
   end
+
   def filter_or_not_by_season(file, _season) do
     {:ok, file}
   end
@@ -64,16 +93,18 @@ defmodule Derivco.Api.LaLigaLogic do
   @spec filter_or_not_by_div(Tuple | String.t(), String.t()) :: Tuple
 
   def filter_or_not_by_div({:error, _reason} = error, _params), do: error
+
   def filter_or_not_by_div({:ok, file}, div)
-       when is_binary(div) and byte_size(div) > 0 do
-    Logger.info("Filtering by division => #{inspect div}")
+      when is_binary(div) and byte_size(div) > 0 do
+    Logger.info("Filtering by division => #{inspect(div)}")
 
     {:ok, Enum.filter(file, &(&1.div == div))}
   end
-def filter_or_not_by_div({:ok, file}, _season) do
+
+  def filter_or_not_by_div({:ok, file}, _season) do
     {:ok, file}
-  end  
-  
+  end
+
   @spec encode_file(Tuple) :: Tuple
 
   def encode_file({:ok, file}) do
@@ -83,9 +114,11 @@ def filter_or_not_by_div({:ok, file}, _season) do
      file
      |> Jason.encode!()}
   end
+
   def encode_file({:ko, reason} = error) do
     {:ko, reason}
-  end  
+  end
+
   def encode_file({:error, reason} = error) do
     error
   end

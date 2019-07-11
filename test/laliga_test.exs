@@ -26,7 +26,7 @@ defmodule LaLigaTest do
     {:error, reason} = LaLigaLogic.filter_or_not_by_season({:error, "error from test"}, "")
 
     assert reason == "error from test"
-  end  
+  end
 
   test "testing laliga filter_or_not_by_div" do
     conn = conn(:get, "/api/laliga")
@@ -34,12 +34,12 @@ defmodule LaLigaTest do
     {:error, reason} = LaLigaLogic.filter_or_not_by_div({:error, "error from test"}, "")
 
     assert reason == "error from test"
-  end    
+  end
 
   test "testing laliga encode_file" do
     conn = conn(:get, "/api/laliga")
     {:error, reason} = LaLigaLogic.encode_file({:error, "error from test"})
 
     assert reason == "error from test"
-  end  
+  end
 end

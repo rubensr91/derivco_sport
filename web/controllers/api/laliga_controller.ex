@@ -24,14 +24,16 @@ defmodule Derivco.Api.LaLigaController do
     |> put_resp_content_type("application/json")
     |> send_resp(200, data)
   end
+
   def response({:ko, reason}, conn) do
-    Logger.error("#{inspect reason}")
+    Logger.error("#{inspect(reason)}")
 
     conn
     |> send_resp(202, reason)
-  end  
+  end
+
   def response({:error, reason}, conn) do
-    Logger.error("Error #{inspect reason}")
+    Logger.error("Error #{inspect(reason)}")
 
     conn
     |> send_resp(400, reason)
