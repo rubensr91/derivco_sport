@@ -50,7 +50,7 @@ defmodule Derivco.Api.LaLigaLogic do
     |> filter_or_not_by_div(params["div"])
   end
 
-  def filter({:ko, reason} = error) do
+  def filter({:ko, _reason} = error) do
     error
     |> encode_file()
   end
@@ -66,9 +66,7 @@ defmodule Derivco.Api.LaLigaLogic do
     {:ok, Enum.filter(file, &(&1.season == season))}
   end
 
-  def filter_or_not_by_season(file, _season) do
-    {:ok, file}
-  end
+  def filter_or_not_by_season(file, _season), do: {:ok, file}
 
   @spec filter_or_not_by_div(Tuple | String.t(), String.t()) :: Tuple
 
@@ -81,9 +79,7 @@ defmodule Derivco.Api.LaLigaLogic do
     {:ok, Enum.filter(file, &(&1.div == div))}
   end
 
-  def filter_or_not_by_div({:ok, file}, _season) do
-    {:ok, file}
-  end
+  def filter_or_not_by_div({:ok, file}, _season), do: {:ok, file}
 
   @spec encode_file(Tuple) :: Tuple
 
@@ -95,11 +91,7 @@ defmodule Derivco.Api.LaLigaLogic do
      |> Jason.encode!()}
   end
 
-  def encode_file({:ko, reason} = error) do
-    {:ko, reason}
-  end
+  def encode_file({:ko, reason}), do: {:ko, reason}
 
-  def encode_file({:error, reason} = error) do
-    error
-  end
+  def encode_file({:error, reason}), do: {:error, reason}
 end
