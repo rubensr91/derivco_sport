@@ -31,6 +31,5 @@ RUN cd ~/derivco_sport \
 	&& mix local.hex --force \
 	&& mix local.rebar --force \
 	&& mix do compile, release 
-# && iex -S mix
 
 CMD ~/derivco_sport/_build/prod/rel/derivco_sport/bin/derivco_sport start

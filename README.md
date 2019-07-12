@@ -26,7 +26,8 @@
 
 ## DOCKER
  * sudo docker pull rubensr91/laliga
- * sudo docker build --tag=rubensr91/laliga .
+ * sudo docker build --no-cache -t rubensr91/laliga:latest .
+ * sudo docker run -p 8080:8081 rubensr91/laliga:latest
 
 ## DOCKER COMPOSE
  * run sudo docker-compose up
