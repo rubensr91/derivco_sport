@@ -32,7 +32,6 @@ defmodule Derivco.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:httpoison, "~> 1.4"},
       {:plug_cowboy, "~> 2.0"},
       {:plug, "~> 1.3"},
       {:prometheus_ex, "~> 3.0"},
