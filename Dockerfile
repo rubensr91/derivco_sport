@@ -1,6 +1,5 @@
 FROM erlang:22
 
-# elixir expects utf8.
 ENV ELIXIR_VERSION="v1.9.0" \
 	LANG=C.UTF-8
 
@@ -16,8 +15,6 @@ RUN set -xe \
 	&& rm elixir-src.tar.gz \
 	&& cd /usr/local/src/elixir \
 	&& make install clean 
-
-# COPY mix.exs mix.lock ./
 
 RUN cd ~/ \
 	&& git clone https://github.com/rubensr91/derivco_sport.git \
